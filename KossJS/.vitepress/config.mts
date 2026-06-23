@@ -55,6 +55,7 @@ export default defineConfig({
         items: [
           { text: '什么是 KossJS', link: '/zh/guide/what-is-KossJS' },
           { text: '快速开始', link: '/zh/guide/getting-started' },
+          { text: 'Node.js 内置库支持', link: '/zh/guide/nodejs-stdlib-support' },
           { text: '安全与沙箱', link: '/zh/security-sandbox/security-sandbox' },
           { text: '版本详解', link: '/zh/guide/version/version-overview' },
           { text: '版本变更日志', link: '/zh/guide/version/changelog-dev.5-to-dev.8' },
