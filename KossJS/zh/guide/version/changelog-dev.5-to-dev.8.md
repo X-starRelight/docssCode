@@ -87,7 +87,8 @@
   - koss_is_stable() C ABI 函数：查询实例是否处于稳定模式
   - stable=True 时自动剥离 FFI 和 Worker 能力位
   - stable=True 且 caps 包含 FFI/Worker 时，注册 stub 函数（调用时抛出明确错误）
-  - stable=True 时 equire('worker_threads') 被模块加载器拦截
+  - stable=True 时 
+equire('worker_threads') 被模块加载器拦截
   - C ABI 6 个 worker 函数添加 stable 感知错误消息
   - Worker 类错误消息提示设置 stable=false
 - **TypeScript 接口封装**：kossjs_interface.ts
@@ -101,98 +102,62 @@
   - koss_is_stable() 函数声明
   - 旧 koss_create/koss_create_with_modules 改为 static inline 向后兼容
 - **worker_threads 模块能力位**：从 DYNAMIC_CODE 改为 KOSS_CAP_WORKER
+- **Node.js 内置库简化重构**（提交 d481465，2026-06-23）：
+  - 移除 Node.js 官方源码依赖，替换为自定义精简实现
+  - 移除对 `internalBinding()`、`primordials` 等 Node.js 内部 API 的依赖
+  - 代码量减少约 10 万行
+- **zlib 压缩支持**：添加 `flate2` Rust crate 依赖
+  - `gzip()` / `gzipSync()`、`gunzip()` / `gunzipSync()`
+  - `deflate()` / `deflateSync()`、`inflate()` / `inflateSync()`
+  - `constants`：zlib 常量定义
+- **TCP Socket 持久化**：在 `runtime.rs` 中实现 TCP 连接持久化管理
+
+### 重构
+
+- **内置库实现变更**：
+
+| 模块 | 实现方式 | 支持 API |
+|------|---------|---------|
+| **crypto** | 自定义 JS + `__koss_hash`/`__koss_random_bytes`/`__koss_random_uuid` | randomBytes, createHash(sha256/sha1/md5), randomUUID, timingSafeEqual, randomFill, randomFillSync, getHashes |
+| **net** | 自定义 JS + `__koss_tcp_*` | Socket, Server, connect(), createServer(), isIP(), isIPv4(), isIPv6() |
+| **http** | 自定义 JS | createServer(), IncomingMessage, ServerResponse, METHODS, STATUS_CODES（仅服务端） |
+| **https** | 基于 http + net 封装 | createServer(), request(), get()（无实际 TLS） |
+| **stream** | 自定义 JS | Readable, Writable, Duplex, Transform, PassThrough, pipeline(), finished() |
+| **zlib** | 自定义 JS + `__koss_gzip*`（flate2） | gzip/gunzip, deflate/inflate（sync + async）, constants |
+| **dgram** | 自定义 JS（基于 TCP 桥接） | createSocket(), socket.bind/send/close/address() |
+| **tls** | 基于 net 模块轻量封装 | connect(), createServer(), TLSSocket（无实际加密） |
+| **dns** | 自定义 JS + `__koss_dns_lookup` | lookup(), resolve(), resolve4(), resolve6(), promises.lookup() |
+| **util** | 自定义 JS | format(), inspect(), deprecate(), promisify(), callbackify(), inherits(), debuglog(), types.* |
+| **diagnostics_channel** | 自定义 JS | channel(), subscribe(), unsubscribe(), publish(), hasSubscribers() |
+| **perf_hooks** | 自定义 JS | performance(now/mark/measure), PerformanceObserver, createHistogram(), timerify() |
+| **trace_events** | 自定义 JS | createTracing(), getEnabledCategories(), Tracing class |
 
 ### 测试
 
-- 新增 	est_stable_mode.py：11 个稳定模式测试
+- 新增 test_stable_mode.py：11 个稳定模式测试
+- 新增 7 个内置库测试文件：test_crypto, test_diagnostics_channel, test_net, test_perf_hooks, test_trace_events, test_util, test_zlib_dgram
 - 更新现有测试：FFI/Worker 相关测试添加 stable=False
+- 测试统计：528 passed, 8 skipped
 
 ### 文档
 
 - 新增 TypeScript 接口使用文档
-- 更新安全与沙箱指南：28 位能力位、审核掩码、审核回调、调试模式、稳定模式
-- 更新 API 概览：新增稳定模式、审核 API、TypeScript 接口
-- 更新版本管理规范：新增 dev.6, dev.7, dev.8 版本历史
-- 更新快速开始：新增稳定模式、沙箱能力位示例
-- 更新 Python 接口文档：新增稳定模式、沙箱安全、能力常量
+- 更新安全与沙箱指南、API 概览、版本管理规范、快速开始、Python 接口文档
 - 新增 API 文档：koss_is_stable, koss_set_audit_mask, koss_get_audit_mask, koss_check_sandbox, koss_enable_audit_debug
+- 新增 Node.js 内置库支持状态表
 
 ### 移除
 
-- 删除过时的设计实现步骤文档：
-  - 安全与沙箱设计_实现步骤.md
-  - 运行时 API 获取设计_实现步骤.md
-  - docs/superpowers/plans/2026-06-11-sandbox-security-v1.4.md
-
----
-
-## 0.1.0-dev.8 后续更新（内置库简化重构）
-
-> 提交：d481465 — 2026-06-23
-
-### 重构
-
-- **Node.js 内置库实现简化**：移除 Node.js 官方源码依赖，替换为自定义精简实现
-  - 移除对 `internalBinding()`、`primordials` 等 Node.js 内部 API 的依赖
-  - 从 crypto.js、net.js、http.js、https.js、stream.js、zlib.js、dgram.js、tls.js、dns.js、util.js、diagnostics_channel.js、perf_hooks.js、trace_events.js 中移除复杂的 Node.js 官方实现
-  - 替换为基于 `__koss_*` Rust 原生函数的自定义实现
-  - 代码量减少约 10 万行
-
-### 新增功能
-
-- **zlib 压缩支持**：添加 `flate2` Rust crate 依赖
-  - `gzip()` / `gzipSync()`：gzip 压缩
-  - `gunzip()` / `gunzipSync()`：gzip 解压缩
-  - `deflate()` / `deflateSync()`：deflate 压缩
-  - `inflate()` / `inflateSync()`：deflate 解压缩
-  - `constants`：zlib 常量定义
-
-- **TCP Socket 持久化**：在 `runtime.rs` 中实现 TCP 连接持久化管理
-  - TCP socket 存储机制
-  - TCP 连接的持久化管理
-  - TCP 服务器的存储和管理功能
-
-### 内置库实现变更
-
-| 模块 | 实现方式 | 说明 |
-|------|---------|------|
-| **crypto** | 自定义 JS shim + `__koss_hash`/`__koss_random_bytes`/`__koss_random_uuid` | randomBytes, createHash(sha256/sha1/md5), randomUUID, timingSafeEqual, randomFill, randomFillSync, getHashes |
-| **net** | 自定义 JS shim + `__koss_tcp_*` | Socket, Server, connect(), createServer(), isIP(), isIPv4(), isIPv6() |
-| **http** | 自定义 JS shim | createServer(), IncomingMessage, ServerResponse, METHODS, STATUS_CODES（仅服务端） |
-| **https** | 基于 http + net 封装 | createServer(), request(), get()（无实际 TLS） |
-| **stream** | 自定义 JS shim | Readable, Writable, Duplex, Transform, PassThrough, pipeline(), finished() |
-| **zlib** | 自定义 JS shim + `__koss_gzip*`（flate2 crate） | gzip/gunzip, deflate/inflate（sync + async）, constants |
-| **dgram** | 自定义 JS shim（基于 TCP 桥接） | createSocket(), socket.bind/send/close/address() |
-| **tls** | 基于 net 模块轻量封装 | connect(), createServer(), TLSSocket（无实际加密） |
-| **dns** | 自定义 JS shim + `__koss_dns_lookup` | lookup(), resolve(), resolve4(), resolve6(), promises.lookup() |
-| **util** | 自定义 JS shim | format(), inspect(), deprecate(), promisify(), callbackify(), inherits(), debuglog(), types.* |
-| **diagnostics_channel** | 自定义 JS shim | channel(), subscribe(), unsubscribe(), publish(), hasSubscribers() |
-| **perf_hooks** | 自定义 JS shim | performance(now/mark/measure), PerformanceObserver, createHistogram(), timerify() |
-| **trace_events** | 自定义 JS shim | createTracing(), getEnabledCategories(), Tracing class |
-
-### 测试
-
-- **新增 7 个测试文件**：
-  - test_crypto.py：加密模块测试
-  - test_diagnostics_channel.py：诊断通道测试
-  - test_net.py：网络模块测试
-  - test_perf_hooks.py：性能钩子测试
-  - test_trace_events.py：跟踪事件测试
-  - test_util.py：工具函数测试
-  - test_zlib_dgram.py：zlib 和数据报测试
-
-- **更新现有测试**：
-  - test_fetch.py：修复 fetch 测试
-  - test_timers.py：修复定时器测试
-  - test_unsupported.py：更新不支持功能测试
-
-- **测试统计**：528 passed, 8 skipped
+- 删除过时的设计实现步骤文档
+- 移除 Node.js 官方源码的复杂实现（约 10 万行代码）
+- 移除 zlib 模块中的 Brotli、Zstd 压缩支持（保留 gzip/deflate）
+- 移除 util 模块中的 getCallSites()、parseArgs() 等高级功能
+- 移除 stream 模块中的 compose()、addAbortSignal() 等未实现功能
 
 ### 已知限制
 
-- `http` 模块仅支持服务端，客户端（ClientRequest、get()、request()）未实现
-- `https` 模块无实际 TLS 加密
-- `tls` 模块无实际 TLS 加密，仅包装 TCP socket
+- `http` 模块仅支持服务端，客户端未实现
+- `https`/`tls` 模块无实际 TLS 加密
 - `dgram` 模块基于 TCP 桥接，非真实 UDP
 - `zlib` 模块的异步函数实际为同步实现
 - `stream` 模块的 promises.pipeline/finished 返回 rejected promises
@@ -206,6 +171,5 @@
 |------|---------|---------|---------|
 | dev.5 → dev.6 | ~10 | ~20 | ~50 |
 | dev.6 → dev.7 | ~15 | ~30 | ~100 |
-| dev.7 → dev.8 | ~5 | ~15 | ~15 |
-| dev.8 内置库重构 | 7（测试） | 28 | ~100 |
-| **总计** | **~37** | **~93** | **~265** |
+| dev.7 → dev.8 | ~12 | ~45 | ~130 |
+| **总计** | **~37** | **~95** | **~280** |
