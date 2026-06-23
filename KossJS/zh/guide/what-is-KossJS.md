@@ -24,43 +24,58 @@ KossJS 通过标准的 C 应用程序二进制接口（ABI）暴露功能，支�
 ### 2. 嵌入式设计
 KossJS 为嵌入式场景优化设计：
 - **轻量级**：极低的内存占用（~10-15 MB）
-- **零 GC 停顿**：无垃圾回收暂停，适合实时应用
+- **极短 GC 停顿**：Rust 侧无 GC，JS 引擎 GC 停顿极短，适合实时应用
 - **隔离实例**：每个 KossInstance 是完全隔离的 JS VM
 - **快速创建销毁**：实例创建/销毁开销极低
 
 ### 3. 内置 Fetch API
 原生支持 HTTP/HTTPS 请求：
-- **TLS 指纹伪装**：模拟 Chrome 的 TLS/JA3/HTTP2 指纹
+- **TLS 支持**：基于 rustls 的 TLS 加密传输（默认兼容 Chrome TLS 加密套件）
 - **Headers 支持**：自定义请求头
 - **Body 支持**：支持请求体
 - **完整响应**：返回状态码、状态文本、响应头、响应体
 
 ### 4. Node.js 兼容
-内置 40+ 个 Node.js 标准库模块：
+内置 Node.js 标准库模块，按支持程度分类：
+
+#### 完整支持（可直接 require）
 
 | 模块 | 说明 |
 |------|------|
 | assert | 断言 |
 | buffer | 缓冲区 |
-| console | 控制台 |
 | constants | 常量 |
-| crypto | 加密 |
 | events | 事件 |
-| fs | 文件系统 |
-| http | HTTP 客户端/服务器 |
-| https | HTTPS 客户端/服务器 |
-| net | 网络 |
-| os | 操作系统 |
-| path | 路径 |
+| os | 操作系统信息 |
+| path | 路径处理 |
 | process | 进程信息 |
 | querystring | 查询字符串 |
-| stream | 流 |
 | string_decoder | 字符串解码 |
 | timers | 定时器 |
-| tls | TLS |
 | url | URL 解析 |
-| util | 工具 |
-| zlib | 压缩 |
+
+#### 部分支持（核心 API 可用）
+
+| 模块 | 说明 |
+|------|------|
+| crypto | 加密（randomBytes, createHash, randomUUID） |
+| dns | DNS 解析（lookup, resolve） |
+| http | HTTP 服务器（仅服务端） |
+| https | HTTPS 封装 |
+| net | TCP 网络 |
+| stream | 流处理 |
+| tls | TLS 封装（无实际加密） |
+| dgram | UDP 封装（基于 TCP 桥接） |
+| zlib | 压缩（gzip/deflate） |
+
+#### 纯 JS Shim（基础功能可用）
+
+| 模块 | 说明 |
+|------|------|
+| util | 工具函数 |
+| perf_hooks | 性能钩子 |
+| trace_events | 跟踪事件 |
+| diagnostics_channel | 诊断通道 |
 
 ### 5. ES Modules 支持
 完整支持 ES Module 语法：
@@ -165,7 +180,7 @@ koss.destroy()
 | **并发支持** | 原生 | 单线程 | 单线程 |
 | **ES Modules** | ✅ | ❌ | ❌ |
 | **内置 Fetch** | ✅ | ❌ | ❌ |
-| **Node.js 兼容** | 40+ 模块 | 无 | 无 |
+| **Node.js 兼容** | 标准库模块 | 无 | 无 |
 
 ## 总结
 
@@ -177,7 +192,7 @@ KossJS 是一个专业级的嵌入式 JavaScript 解决方案：
 | ✅ **跨平台** | 一次集成，全平台运行 |
 | ✅ **多语言** | 支持几乎所有主流编程语言 |
 | ✅ **隔离性** | 完全隔离的 JS VM 实例 |
-| ✅ **Node.js 兼容** | 内置 40+ 标准库模块 |
+| ✅ **Node.js 兼容** | 标准库模块（assert、buffer、crypto、events、http、net、stream、url、zlib 等） |
 | ✅ **ES Modules** | 原生 ES Module 支持 |
 | ✅ **Fetch API** | 原生 HTTP 请求支持 |
 | ✅ **开源** | 透明可控，可根据需要修改 |

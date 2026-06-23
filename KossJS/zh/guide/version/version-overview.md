@@ -62,7 +62,7 @@ KossJS 的版本号**必须**遵循以下格式：
 版本优先级**必须**严格按语义化版本规则确定：
 1. 版本号按顺序比较：主版本号、次版本号、修订号。数值越大，版本越新。
 2. 正式版本（无预发布后缀）的优先级**总是高于**任何预发布版本。例如：***1.0.0*** > ***1.0.0-rc.1***。
-3. 对于有相��核心版本号的预发布版本，其优先级由标识符决定。标识符按**字典序**比较：***dev*** < ***internal*** < ***alpha*** < ***beta*** < ***rc***。
+3. 对于有相同核心版本号的预发布版本，其优先级由标识符决定。标识符按**字典序**比较：***dev*** < ***internal*** < ***alpha*** < ***beta*** < ***rc***。
 
 ## 6. 规范的修订
 
@@ -71,3 +71,17 @@ KossJS 的版本号**必须**遵循以下格式：
 | 版本 | 日期 | 修订说明 | 作者 |
 | :--- | :--- | :--- | :--- |
 | 0.1.0-dev.2 | 2026/04/12 | 初始版本，基于 SemVer 2.0.0 建立 | Sxxyrry |
+
+## 7. 版本历史
+
+| 版本 | 日期 | 主要变更 |
+| :--- | :--- | :--- |
+| 0.1.0-dev.1 | 2026/04 | 初始版本：Boa 引擎嵌入、C ABI、模块加载、事件循环 |
+| 0.1.0-dev.2 | 2026/04 | Python 接口封装、Fetch API、模块解析器 |
+| 0.1.0-dev.3 | 2026/04 | Worker 线程池、跨平台 CI |
+| 0.1.0-dev.4 | 2026/04 | Node.js 兼容层（internalBinding、process、模块系统）、标准库扩展 |
+| 0.1.0-dev.5 | 2026/06 | stdlib 扩展（URLSearchParams、assert、os、path、timers）、Worker 安全加固（CWE-94、CWE-400）、Python 接口整合、跨平台修复（Android TLS） |
+| 0.1.0-dev.6 | 2026/06 | Senri FFI 子系统、N-API 兼容层、Buffer 全局对象、process.dlopen、事件循环扩展、GPL 许可证输出 |
+| 0.1.0-dev.7 | 2026/06 | 28 位细粒度能力位系统、沙箱安全三层机制（能力位 + 审核掩码 + 审核回调）、审核调试模式、FFI 沙箱测试、跨平台编译修复（iOS/Android/鸿蒙/Linux aarch64）、内存管理修复 |
+| 0.1.0-dev.8 | 2026/06 | stable 模式（FFI/Worker 隔离）、koss_is_stable()、TypeScript 接口封装、Python 接口新增 get_capabilities()/is_stable、worker_threads 模块拦截、C ABI stable 感知错误消息 |
+| 0.1.0-dev.9 | 2026/06 | Node.js 内置库实现简化（移除 Node.js 官方源码依赖）、zlib 压缩支持（flate2 crate）、TCP Socket 持久化、7 个新测试文件、代码量减少约 10 万行 |

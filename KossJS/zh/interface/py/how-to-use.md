@@ -1,4 +1,4 @@
-# KossJS Python 接口封装使用文档
+﻿# KossJS Python 接口封装使用文档
 
 > [!TIP]
 > 本文档介绍 KossJS 的 Python 接口封装 ***kossjs_interface.py***。
@@ -25,11 +25,13 @@
 - **核心类**：***KossJS***
 - **依赖**：***ctypes***、***json***、***pathlib*** 等标准库
 - **功能**：
-  - 创建 JS 实例（支持模块加载）
+  - 创建 JS 实例（支持模块加载、能力位控制、稳定模式）
   - 执行 JavaScript 代码
   - 全局变量注入
   - 注册原生函数
   - Fetch API 调用
+  - 沙箱安全（审核掩码、审核回调、调试模式）
+  - Worker 线程池
 
 ---
 
@@ -37,62 +39,175 @@
 
 ### 2.1 初始化
 
-```python
-koss = KossJS(lib_path: str | None = None, with_modules: bool = False, root_dir: str | None = None)
-```
+`python
+koss = KossJS(
+    lib_path: str | None = None,
+    with_modules: bool = False,
+    root_dir: str | None = None,
+    capabilities: int | None = None,
+    stable: bool = True
+)
+`
 
 - **参数**:
   - ***lib_path***: 动态库路径。若为 ***None***，根据操作系统自动选择默认路径
   - ***with_modules***: 是否启用模块加载（默认 ***False***）
   - ***root_dir***: 模块解析的根目录（默认当前目录）
+  - ***capabilities***: 能力位掩码（默认 ***None*** = 全部启用）。参见 [安全与沙箱指南](/zh/security-sandbox/security-sandbox)
+  - ***stable***: 稳定模式（默认 ***True***）。***True*** 时禁用 FFI 和 Worker；***False*** 启用所有功能
 
-### 2.2 执行代码
+**能力常量**（28 个细粒度操作）：
 
-#### ***eval(code: str) -> str***
+`python
+# 文件系统（6 个）
+KossJS.FS_READ         = 1 << 0
+KossJS.FS_WRITE        = 1 << 1
+KossJS.FS_DELETE       = 1 << 2
+KossJS.FS_MKDIR        = 1 << 3
+KossJS.FS_RENAME       = 1 << 4
+KossJS.FS_CHMOD        = 1 << 5
 
-执行 JavaScript 代码并返回结果。
+# 网络（5 个）
+KossJS.NET_TCP_CLIENT  = 1 << 6
+KossJS.NET_TCP_SERVER  = 1 << 7
+KossJS.NET_UDP         = 1 << 8
+KossJS.NET_DNS         = 1 << 9
+KossJS.NET_FETCH       = 1 << 10
 
-```python
+# 加密（4 个）
+KossJS.CRYPTO_HASH     = 1 << 11
+KossJS.CRYPTO_HMAC     = 1 << 12
+KossJS.CRYPTO_RANDOM   = 1 << 13
+KossJS.CRYPTO_PBKDF2   = 1 << 14
+
+# 内置 FFI（5 个）
+KossJS.FFI_OPEN        = 1 << 15
+KossJS.FFI_CALL        = 1 << 16
+KossJS.FFI_ALLOC       = 1 << 17
+KossJS.FFI_CALLBACK    = 1 << 18
+KossJS.FFI_STRUCT      = 1 << 19
+
+# 其他模块（8 个）
+KossJS.NATIVE_ADDON    = 1 << 20
+KossJS.WASM            = 1 << 21
+KossJS.SHARED_MEMORY   = 1 << 22
+KossJS.HIGHRES_TIME    = 1 << 23
+KossJS.SYSINFO         = 1 << 24
+KossJS.MODULE_LOAD     = 1 << 25
+KossJS.DYNAMIC_CODE    = 1 << 26
+KossJS.DEBUG_CAP       = 1 << 27
+
+# 组合常量
+KossJS.KOSS_CAP_SANDBOX    = 0
+KossJS.KOSS_CAP_ALL_FS     = FS_READ | FS_WRITE | FS_DELETE | FS_MKDIR | FS_RENAME | FS_CHMOD
+KossJS.KOSS_CAP_ALL_NET    = NET_TCP_CLIENT | NET_TCP_SERVER | NET_UDP | NET_DNS | NET_FETCH
+KossJS.KOSS_CAP_ALL_CRYPTO = CRYPTO_HASH | CRYPTO_HMAC | CRYPTO_RANDOM | CRYPTO_PBKDF2
+KossJS.KOSS_CAP_ALL_FFI    = FFI_OPEN | FFI_CALL | FFI_ALLOC | FFI_CALLBACK | FFI_STRUCT
+KossJS.KOSS_CAP_ALL        = 0xFFFFFFFF
+
+# 兼容别名
+KossJS.KOSS_CAP_FS              = KossJS.KOSS_CAP_ALL_FS
+KossJS.KOSS_CAP_NET             = KossJS.KOSS_CAP_ALL_NET
+KossJS.KOSS_CAP_CRYPTO          = KossJS.KOSS_CAP_ALL_CRYPTO
+KossJS.KOSS_CAP_WORKER          = 1 << 3
+KossJS.KOSS_CAP_EXTERNAL_LOADER = KossJS.MODULE_LOAD
+`
+
+### 2.2 实例属性
+
+#### ***is_stable -> bool***
+
+查询实例是否处于稳定模式。
+
+`python
+koss = KossJS()
+print(koss.is_stable)  # True
+
+koss_dev = KossJS(stable=False)
+print(koss_dev.is_stable)  # False
+`
+
+#### ***get_capabilities() -> int***
+
+查询当前实例的能力位掩码。
+
+`python
+koss = KossJS(capabilities=KossJS.KOSS_CAP_ALL_FS | KossJS.KOSS_CAP_ALL_NET)
+caps = koss.get_capabilities()
+print(f"Capabilities: {caps:#010x}")
+`
+
+### 2.3 执行代码
+
+#### ***eval(code: str) -> Any***
+
+执行 JavaScript 代码并返回结果。JSON 对象/数组自动解析。
+
+`python
 result = koss.eval("1 + 2")
 print(result)  # 输出: 3
-```
+`
+
+#### ***run_async(code: str, timeout_ms: int = 30000) -> str***
+
+执行异步代码并驱动事件循环直到 Promise 完成。适合 wait/etch。
+
+`python
+result = koss.run_async("""
+(async () => {
+    const r = await fetch("https://api.github.com/users/github");
+    const d = await r.json();
+    return d.login;
+})();
+""", timeout_ms=30000)
+`
+
+#### ***tick() -> bool***
+
+运行事件循环单次迭代。返回 True 表示仍有未完成的异步操作。
+
+`python
+koss.eval("fetch('https://example.com/api').then(r => r.json())")
+while koss.tick():
+    pass  # 手动驱动事件循环
+`
 
 #### ***run_file(path: str) -> str***
 
 执行 JavaScript 文件。
 
-```python
+`python
 result = koss.run_file("./script.js")
-```
+`
 
 #### ***run_module(path: str) -> str***
 
 以 ES Module 方式执行 JavaScript 文件。
 
-```python
+`python
 result = koss.run_module("./module.mjs")
-```
+`
 
 #### ***run_string(code: str) -> str***
 
 执行 JavaScript 代码字符串（与 ***eval*** 相同）。
 
-```python
+`python
 result = koss.run_string("console.log('Hello')")
-```
+`
 
 #### ***run_module_string(code: str) -> str***
 
 以 ES Module 方式执行代码字符串。
 
-```python
+`python
 result = koss.run_module_string('''
 import { add } from "./math.mjs";
 add(1, 2);
 ''')
-```
+`
 
-### 2.3 全局变量
+### 2.4 全局变量
 
 #### ***set_global(name: str, value: Any) -> None***
 
@@ -100,56 +215,153 @@ add(1, 2);
 - ***str*** → 全局字符串
 - ***int/float*** → 全局数字
 - ***bool*** → 全局布尔值
+- ***None*** → 全局 
+ull
+- ***"__undefined__"*** → 全局 undefined
+- ***list/dict*** → 自动序列化为 JSON 对象/数组
 
-```python
+`python
 koss.set_global("myVar", "Hello")
 koss.set_global("count", 100)
 koss.set_global("isReady", True)
-```
+koss.set_global("emptyVal", None)
+koss.set_global("notSet", "__undefined__")
+koss.set_global("config", {"debug": True, "port": 8080})
+`
 
-### 2.4 原生函数注册
+### 2.5 原生函数 / 类注册
 
 #### ***register_function(name: str, func: Callable[..., Any]) -> None***
 
 将 Python 函数注册为 JavaScript 可调用。
 
-```python
+`python
 def add(a, b):
     return str(int(a) + int(b))
 
 koss.register_function("add", add)
 result = koss.eval("add(10, 20)")
 print(result)  # 输出: 30
-```
+`
 
-### 2.5 资源管理
+#### ***register_class(class_name: str, methods: dict[str, Callable]) -> None***
+
+注册支持 
+ew 关键字的 JavaScript 类。
+
+`python
+def greet(name="World"):
+    return f"Hello, {name}!"
+
+koss.register_class("Greeter", {"greet": greet})
+result = koss.eval("new Greeter().greet('KossJS')")
+print(result)  # 输出: Hello, KossJS!
+`
+
+### 2.6 沙箱安全
+
+#### ***set_audit_mask(mask: int) -> None***
+
+设置审核掩码，控制哪些 API 需要经过审核回调。
+
+`python
+koss.set_audit_mask(KossJS.FS_READ | KossJS.NET_FETCH)
+`
+
+#### ***get_audit_mask() -> int***
+
+获取当前审核掩码。
+
+`python
+mask = koss.get_audit_mask()
+`
+
+#### ***check_sandbox(callback: Callable | None) -> None***
+
+注册或清除审核回调。回调签名：(target: str, args: list[str], pwd: str | None) -> bool
+
+`python
+def my_audit(target: str, args: list[str], pwd: str | None) -> bool:
+    if target == "fs.readFile":
+        return args[0].startswith("/tmp/sandbox/")
+    return True
+
+koss.check_sandbox(my_audit)  # 注册
+koss.check_sandbox(None)      # 清除
+`
+
+#### ***enable_audit_debug(enable: bool) -> None***
+
+启用/禁用审核调试模式。
+
+`python
+koss.enable_audit_debug(True)   # 开启
+koss.enable_audit_debug(False)  # 关闭
+`
+
+### 2.7 Worker 线程池
+
+#### ***create_worker_pool(size: int) -> str***
+
+创建指定大小的 Worker 线程池（最大 64）。
+
+#### ***worker_execute(worker_id: int, code: str) -> str***
+
+在指定 Worker 上执行 JavaScript 代码。
+
+#### ***worker_post_message(worker_id: int, data: str) -> str***
+
+向指定 Worker 发送 JSON 消息。
+
+#### ***worker_try_recv() -> str | None***
+
+非阻塞收取 Worker 消息/执行结果。无消息时返回 None。
+
+#### ***worker_terminate(worker_id: int) -> str***
+
+终止指定 Worker 线程。
+
+#### ***worker_shutdown() -> str***
+
+关闭全部 Worker 线程池。
+
+`python
+koss = KossJS(stable=False)  # Worker 需要 stable=False
+koss.create_worker_pool(2)
+koss.worker_execute(0, "1 + 1")
+msg = koss.worker_try_recv()
+print(msg)
+koss.worker_shutdown()
+`
+
+### 2.8 资源管理
 
 #### ***destroy() -> None***
 
 销毁 JS 实例并释放内存。
 
-```python
+`python
 koss.destroy()
-```
+`
 
 ##### 上下文管理器支持
 
-```python
+`python
 with KossJS() as koss:
     result = koss.eval("1 + 1")
     print(result)
 # 自动销毁
-```
+`
 
-### 2.6 其他方法
+### 2.9 其他方法
 
 #### ***version() -> str***
 
 获取 KossJS 版本。
 
-```python
-print(koss.version())  # 输出: 0.1.0-dev.2
-```
+`python
+print(koss.version())  # 输出: 0.1.0-dev.8
+`
 
 ---
 
@@ -159,14 +371,14 @@ print(koss.version())  # 输出: 0.1.0-dev.2
 
 当 JavaScript 代码执行抛出错误时，会引发 ***JsError*** 异常。
 
-```python
+`python
 from kossjs_interface import KossJS, JsError
 
 try:
     koss.eval("throw new Error('test error')")
 except JsError as e:
     print(f"JS Error: {e}")
-```
+`
 
 ---
 
@@ -174,20 +386,20 @@ except JsError as e:
 
 ### 4.1 基本用法
 
-```python
+`python
 from kossjs_interface import KossJS
 
 with KossJS() as koss:
     # 基本计算
     result = koss.eval("1 + 2 * 3")
     print(result)  # 输出: 7
-    
+
     # 箭头函数
     code = "(a, b) => a + b"
     koss.set_global("add", koss.eval(code))
     result = koss.eval("add(5, 3)")
     print(result)  # 输出: 8
-    
+
     # 对象操作
     code = """
     const person = { name: "John", age: 30 };
@@ -195,29 +407,52 @@ with KossJS() as koss:
     """
     result = koss.eval(code)
     print(result)  # 输出: John
-```
+`
 
-### 4.2 使用 Fetch API
+### 4.2 使用沙箱能力位
 
-```python
-import time
+`python
 from kossjs_interface import KossJS
 
-with KossJS() as koss:
-    # 异步 Fetch 请求
-    code = '''
+# 纯计算沙箱
+with KossJS(capabilities=KossJS.KOSS_CAP_SANDBOX) as koss:
+    result = koss.eval("1 + 1")
+    print(result)  # 正常工作
+
+# 只允许网络 + 加密
+with KossJS(capabilities=KossJS.KOSS_CAP_ALL_NET | KossJS.KOSS_CAP_ALL_CRYPTO) as koss:
+    result = koss.run_async('''
     (async () => {
-      const response = await fetch("https://jsonplaceholder.typicode.com/todos/1");
-      return await response.json();
+        const r = await fetch("https://api.github.com/users/github");
+        const d = await r.json();
+        return d.login;
     })();
-    '''
-    result = koss.eval(code)
-    print(result)
-```
+    ''')
+`
 
-### 4.3 使用 Node.js 模块
+### 4.3 使用审核回调
 
-```python
+`python
+from kossjs_interface import KossJS, JsError
+
+def my_audit(target: str, args: list[str], pwd: str | None) -> bool:
+    if target == "fs.readFile":
+        return args[0].startswith("/tmp/sandbox/")
+    return True
+
+koss = KossJS(capabilities=KossJS.KOSS_CAP_ALL_FS)
+koss.set_audit_mask(KossJS.FS_READ)
+koss.check_sandbox(my_audit)
+
+try:
+    koss.eval("require('fs').readFileSync('/etc/passwd')")
+except JsError as e:
+    print(f"Blocked: {e}")  # KossSecurityError
+`
+
+### 4.4 使用 Node.js 模块
+
+`python
 from kossjs_interface import KossJS
 
 with KossJS() as koss:
@@ -228,68 +463,21 @@ with KossJS() as koss:
     '''
     result = koss.eval(code)
     print(result)  # 输出: /home/user/file.txt
-    
-    # 使用 fs 模块
-    code = '''
-    const fs = require("fs");
-    fs.existsSync("/tmp");
-    '''
-    result = koss.eval(code)
-    print(result)  # 输出: true 或 false
-```
-
-### 4.4 使用 Fetch API (直接调用 Rust 实现)
-
-```python
-import json
-from kossjs_interface import KossJS
-
-with KossJS() as koss:
-    # 直接调用 Rust fetch 实现
-    request_json = json.dumps({
-        "url": "https://api.github.com/users/github",
-        "method": "GET",
-        "headers": {
-            "User-Agent": "KossJS/0.1.0"
-        }
-    })
-    
-    # 使用 koss_fetch 需要先注册
-    # 或者直接调用 fetch polyfill
-    code = '''
-    fetch("https://api.github.com/users/github")
-      .then(response => response.json())
-      .then(data => console.log("Login:", data.login))
-    '''
-    koss.eval(code)
-    time.sleep(2)
-```
+`
 
 ### 4.5 注册原生函数
 
-```python
+`python
 from kossjs_interface import KossJS
 
 def python_add(a, b):
     return str(int(a) + int(b))
 
-def python_read_file(filename):
-    try:
-        with open(filename, 'r') as f:
-            return f.read()
-    except Exception as e:
-        return str(e)
-
 with KossJS() as koss:
     koss.register_function("python_add", python_add)
-    koss.register_function("readFile", python_read_file)
-    
     result = koss.eval("python_add(10, 20)")
     print(result)  # 输出: 30
-    
-    result = koss.eval("readFile('test.txt')")
-    print(result)
-```
+`
 
 ---
 
@@ -313,26 +501,30 @@ Python 接口通过以下方式管理这些引用：
 3. **异常处理**：JavaScript 错误会引发 ***JsError*** 异常。
 4. **多线程环境**：不同线程使用不同的 ***KossJS*** 实例是安全的。
 5. **模块加载**：需要 ***with_modules=True*** 才能使用 ***require()***。
-6. **Async/Await**：异步代码会立即返回 Promise 对象，需要等待解决。
+6. **Async/Await**：异步代码需要使用 ***run_async()*** 执行。
+7. **稳定模式**：生产环境使用默认 ***stable=True***，开发/调试使用 ***stable=False***。
 
 ---
 
 ## 7. 常见问题
 
-**Q: 为什么我的代码返回 "undefined"?**  
+**Q: 为什么我的代码返回 "undefined"?**
 A: JavaScript 函数默认返回 undefined。如果需要返回值，确保有 return 语句。
 
-**Q: 如何处理异步 fetch?**  
-A: 由于 boa_engine 目前不支���真正的异步，您可以使用 async/await 语法但结果会是 Promise 对象，或者使用 .then() 链式调用。
+**Q: 如何处理异步 fetch?**
+A: 使用 un_async() 方法执行异步代码，它会驱动事件循环直到 Promise 完成。
 
-**Q: 需要并发执行多个脚本怎么办？**  
+**Q: 需要并发执行多个脚本怎么办？**
 A: 创建多个 ***KossJS*** 实例，每个管理一组脚本。它们独立运行。或配合 ***threading*** 模块执行。
 
-**Q: 为什么 require() 不工作？**  
+**Q: 为什么 require() 不工作？**
 A: 确保创建实例时设置 ***with_modules=True***。
 
-**Q: 如何加载自定义模块？**  
-A: 可以通过 ***register_module_loader*** 自定义模块加载逻辑。
+**Q: 如何启用 FFI 功能？**
+A: 创建实例时设置 ***stable=False***。
+
+**Q: 如何限制实例的权限？**
+A: 使用 ***capabilities*** 参数设置能力位掩码。
 
 ---
 

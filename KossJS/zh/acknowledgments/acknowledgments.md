@@ -46,12 +46,41 @@ KossJS 的开发离不开以下优秀的开源项目：
 ### Rust 语言生态
 
 - **[Boa](https://github.com/boa-dev/boa)** - JavaScript 引擎
-  - KossJS 的核心 JS 引擎
+  - KossJS 的核心 JS 引擎（含 boa_engine、boa_parser、boa_runtime、boa_gc）
   - 许可证: MIT OR Apache-2.0
 
 - **[Rust](https://www.rust-lang.org/)** - 编程语言
   - 提供内存安全保证和零成本抽象
   - 使 KossJS 能够支持多平台
+
+### Rust Crate 依赖
+
+| Crate | 用途 | 许可证 |
+|-------|------|--------|
+| [tokio](https://tokio.rs/) | 异步运行时与事件循环 | MIT |
+| [reqwest](https://github.com/seanmonstar/reqwest) | HTTP/HTTPS 客户端（fetch） | MIT OR Apache-2.0 |
+| [rustls](https://github.com/rustls/rustls) | TLS 加密传输 | MIT OR Apache-2.0 |
+| [rustls-native-certs](https://github.com/rustls/rustls-native-certs) | 本地证书加载 | MIT OR Apache-2.0 |
+| [webpki-roots](https://github.com/rustls/webpki-roots) | WebPKI 根证书 | MIT |
+| [serde](https://serde.rs/) + [serde_json](https://github.com/serde-rs/json) | 序列化与 JSON 处理 | MIT OR Apache-2.0 |
+| [rand](https://github.com/rust-random/rand) | 随机数生成 | MIT OR Apache-2.0 |
+| [sha1](https://github.com/RustCrypto/hashes) | SHA-1 哈希 | MIT OR Apache-2.0 |
+| [sha2](https://github.com/RustCrypto/hashes) | SHA-2 系列哈希 | MIT OR Apache-2.0 |
+| [md-5](https://github.com/RustCrypto/hashes) | MD5 哈希 | MIT OR Apache-2.0 |
+| [hmac](https://github.com/RustCrypto/MACs) | HMAC 消息认证码 | MIT OR Apache-2.0 |
+| [pbkdf2](https://github.com/RustCrypto/password-hashes) | PBKDF2 密钥派生 | MIT OR Apache-2.0 |
+| [base64](https://github.com/marshallpierce/rust-base64) | Base64 编解码 | MIT OR Apache-2.0 |
+| [url](https://github.com/servo/rust-url) | URL 解析 | MIT OR Apache-2.0 |
+| [once_cell](https://github.com/matklad/once_cell) | 惰性初始化 | MIT OR Apache-2.0 |
+| [rustc-hash](https://github.com/rust-lang/rustc-hash) | 高性能哈希表 | Apache-2.0 |
+| [num_cpus](https://github.com/seanmonstar/num_cpus) | CPU 核心数探测 | MIT OR Apache-2.0 |
+
+### 平台绑定
+
+| Crate | 用途 | 平台 | 许可证 |
+|-------|------|------|--------|
+| [winapi](https://github.com/retep998/winapi-rs) | Windows API 绑定 | Windows | MIT OR Apache-2.0 |
+| [libc](https://github.com/rust-lang/libc) | POSIX C 库绑定 | Unix/Linux/macOS/iOS/Android | MIT OR Apache-2.0 |
 
 ### Python 接口
 
