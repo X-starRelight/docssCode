@@ -3,6 +3,9 @@
 **功能描述**：在指定 Worker 线程上执行 JavaScript 代码。  
 **返回值**：***KossResult*** 结构体，包含命令 ID（JSON 格式：`{"commandId": id}`）。
 
+> [!WARNING]
+> Worker 在 `stable=True`（默认）时被禁用。如需在生产环境中使用并行执行功能，请查看 [stable 模式替代方案](/zh/reference/stable-alternatives)。
+
 ## 函数签名
 
 ```c

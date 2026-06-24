@@ -87,8 +87,7 @@
   - koss_is_stable() C ABI 函数：查询实例是否处于稳定模式
   - stable=True 时自动剥离 FFI 和 Worker 能力位
   - stable=True 且 caps 包含 FFI/Worker 时，注册 stub 函数（调用时抛出明确错误）
-  - stable=True 时 
-equire('worker_threads') 被模块加载器拦截
+  - stable=True 时 equire('worker_threads') 被模块加载器拦截
   - C ABI 6 个 worker 函数添加 stable 感知错误消息
   - Worker 类错误消息提示设置 stable=false
 - **TypeScript 接口封装**：kossjs_interface.ts

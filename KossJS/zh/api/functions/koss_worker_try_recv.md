@@ -3,6 +3,9 @@
 **功能描述**：非阻塞地尝试从任意 Worker 收取消息或执行结果。  
 **返回值**：***KossResult*** 结构体。无消息时 `value` 为 `"null"`。
 
+> [!WARNING]
+> Worker 在 `stable=True`（默认）时被禁用。如需在生产环境中使用并行执行功能，请查看 [stable 模式替代方案](/zh/reference/stable-alternatives)。
+
 ## 函数签名
 
 ```c

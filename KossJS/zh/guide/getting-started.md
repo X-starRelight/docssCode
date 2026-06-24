@@ -186,6 +186,9 @@ print(koss_dev.is_stable)  # False
 
 详见 [安全与沙箱指南](/zh/security-sandbox/security-sandbox)。
 
+> [!TIP]
+> stable 模式下 FFI 和 Worker 被禁用？查看 [stable 模式替代方案](/zh/reference/stable-alternatives) 了解如何在生产环境中实现相同功能。
+
 ### 高性能
 - **Rust 实现**：极低的内存占用
 - **极短 GC 停顿**：Rust 侧无 GC，JS 引擎 GC 停顿极短

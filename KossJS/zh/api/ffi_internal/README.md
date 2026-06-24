@@ -1,5 +1,8 @@
 # `_senri_ffi` 内部 FFI API 文档
 
+> [!WARNING]
+> `_senri_ffi` 在 `stable=True`（默认）时被禁用。如需在生产环境中使用 FFI 功能，请查看 [stable 模式替代方案](/zh/reference/stable-alternatives)。
+
 `_senri_ffi` 是 KossJS 内置的 **C 外部函数接口（Foreign Function Interface）**，挂载在 `globalThis._senri_ffi` 上。
 通过它，JS 代码可以直接调用任意原生动态库（`.dll` / `.so` / `.dylib`）中的 C ABI 函数，不需要任何 C 编译步骤或原生插件。
 

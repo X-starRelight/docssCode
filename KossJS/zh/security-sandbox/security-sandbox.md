@@ -128,13 +128,12 @@ koss5 = KossJS(with_modules=True, root_dir="./modules",
 当 JS 代码尝试使用被禁用的能力时：
 
 ```javascript
-// 假设实例禁用了 FS_READ
+// 假设实例禁用了 NET_FETCH
 
-const fs = require('fs');     // require 仍然可以解析模块名
-fs.readFileSync('/etc/passwd') // → TypeError: fs.readFileSync is not a function
+const r = await fetch("https://example.com");  // → TypeError: fetch is not a function
 ```
 
-原因是禁用的 `internalBinding()` 返回 `undefined`，导致该能力的原生函数不存在，JS 侧调用时报 `TypeError`。
+原因是禁用的能力对应的原生函数未注册，JS 侧调用时报 `TypeError`。
 
 ### 1.5 不受能力限制的模块
 
@@ -172,6 +171,9 @@ fs.readFileSync('/etc/passwd') // → TypeError: fs.readFileSync is not a functi
 |------|---------|
 | FFI（`_senri_ffi`） | 无法在所有场景下充分测试 |
 | Worker（`worker_threads`） | Worker 实现未传播沙箱设置（能力位、审核回调） |
+
+> [!TIP]
+> 如需在 stable 模式下实现 FFI 或 Worker 的功能，请参考 [stable 模式替代方案](/zh/reference/stable-alternatives)。
 
 ### 2.3 stable=True 时的行为
 

@@ -44,7 +44,7 @@ export default defineConfig({
       { text: '首页', link: '/' },
       { text: '什么是 KossJS', link: '/zh/guide/what-is-KossJS' },
       { text: '快速开始', link: '/zh/guide/getting-started' },
-      { text: ' API 文档', link: '/zh/api/API-overview' },
+      { text: 'API 文档', link: '/zh/api/API-overview' },
       { text: '回到文档汇总', link: '/back/' },
     ],
 
@@ -55,10 +55,25 @@ export default defineConfig({
         items: [
           { text: '什么是 KossJS', link: '/zh/guide/what-is-KossJS' },
           { text: '快速开始', link: '/zh/guide/getting-started' },
-          { text: 'Node.js 内置库支持', link: '/zh/guide/nodejs-stdlib-support' },
           { text: '安全与沙箱', link: '/zh/security-sandbox/security-sandbox' },
-          { text: '版本详解', link: '/zh/guide/version/version-overview' },
-          { text: '版本变更日志', link: '/zh/guide/version/changelog-dev.5-to-dev.8' },
+          { text: '贡献指南', link: '/zh/guide/contributing' },
+        ]
+      },
+      {
+        text: '版本',
+        collapsed: false,
+        items: [
+          { text: '版本管理规范', link: '/zh/version/version-overview' },
+          { text: '版本变更日志', link: '/zh/version/changelog-dev.5-to-dev.8' },
+        ]
+      },
+      {
+        text: '参考',
+        collapsed: false,
+        items: [
+          { text: 'Node.js 内置库支持状态', link: '/zh/reference/nodejs-stdlib-support' },
+          { text: 'stable 模式替代方案', link: '/zh/reference/stable-alternatives' },
+          { text: 'API 概览', link: '/zh/api/API-overview' },
         ]
       },
       {
