@@ -53,7 +53,7 @@
   - 错误消息优化：区分能力错误（KossCapabilityError）和审核错误（KossSecurityError）
 - **FFI 沙箱测试**：15 个 FFI 能力位测试
 - **综合沙箱测试**：81 个沙箱安全测试
-- **KossJS 全局对象**：自动获取版本号和运行时信息
+- **KossJS 全局对象**：自动获取版本号、运行时信息和 stable 模式状态（`version`、`runtime`、`isStable`）
 
 ### 修复
 

@@ -82,6 +82,13 @@ export default defineConfig({
         items: [
           { text: 'API 概览', link: '/zh/api/API-overview' },
           {
+            text: '全局对象',
+            collapsed: true,
+            items: [
+              { text: 'KossJS', link: '/zh/api/globals/kossjs-global' },
+            ]
+          },
+          {
             text: '实例生命周期',
             collapsed: true,
             items: [
