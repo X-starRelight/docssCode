@@ -23,7 +23,7 @@ export default defineConfig({
     }
   },
   themeConfig: {
-    logo: 'https://images-sxxyrry.pages.dev/KossJS_Bigger.png',
+    logo: 'https://images-sxxyrry.pages.dev/BON_Bigger.png',
     outline: {
       label: '在本页面'
     },
@@ -40,7 +40,7 @@ export default defineConfig({
     },
     externalLinkIcon: true,
     editLink: {
-      pattern: 'https://github.com/sxxyrry/docssCode/edit/main/KossJS/:path',
+      pattern: 'https://github.com/sxxyrry/docssCode/edit/main/BON/:path',
       text: '在 Github 上编辑此页'
     },
     sidebarMenuLabel: '菜单',

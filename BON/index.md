@@ -6,7 +6,7 @@ hero:
   text: 'JSON 的超集，配置界的编译器'
   tagline: '编译期执行的声明式数据转换语言'
   image:
-    src: https://images-sxxyrry.pages.dev/KossJS_Bigger.png
+    src: https://images-sxxyrry.pages.dev/BON_Bigger.png
     alt: BON
   actions:
     - theme: brand
