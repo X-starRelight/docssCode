@@ -7,7 +7,7 @@ const members_CoreStudio = [
     name: 'TT23XR Studio',
     title: '项目创始工作室',
     links: [
-      { icon: 'github', link: 'https://github.com/sxxyrry' },
+      { icon: 'github', link: 'https://github.com/TT23XR-Studio' },
     ]
   },
 ]
@@ -15,10 +15,10 @@ const members_CoreStudio = [
 const members_Core = [
   {
     avatar: 'https://images-sxxyrry.pages.dev/sxxyrryAvatar.jpg',
-    name: 'Sxxyrry（来自 TT23XR Studio ）',
+    name: 'X-starRelight（来自 TT23XR Studio ）',
     title: '项目负责人，作者',
     links: [
-      { icon: 'github', link: 'https://github.com/sxxyrry' },
+      { icon: 'github', link: 'https://github.com/X-starRelight' },
     ]
   },
   {

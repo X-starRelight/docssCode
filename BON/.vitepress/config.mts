@@ -55,6 +55,8 @@ export default defineConfig({
       { text: '语言规范', link: '/zh/reference/syntax-overview' },
       { text: '标准库', link: '/zh/reference/stdlib-overview' },
       { text: 'API 文档', link: '/zh/how-to-use/py' },
+      { text: '鸣谢', link: '/zh/acknowledgments/acknowledgments' },
+      { text: '回到文档汇总', link: '/back/' },
     ],
     sidebar: {
       '/zh/': [
@@ -149,7 +151,16 @@ export default defineConfig({
             { text: 'Python CLI', link: '/zh/how-to-use/pycli' },
             { text: 'TypeScript CLI', link: '/zh/how-to-use/tscli' }
           ]
-        }
+        },
+        {
+          text: '其他',
+          collapsed: false,
+          items: [
+            { text: '鸣谢', link: '/zh/acknowledgments/acknowledgments' },
+            // { text: '贡献指南', link: '/zh/guide/contributing' },
+            { text: '回到文档汇总', link: '/back/' },
+          ],
+        },
       ]
     },
     socialLinks: [
