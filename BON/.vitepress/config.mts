@@ -164,7 +164,7 @@ export default defineConfig({
       ]
     },
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/sxxyrry/BON' }
+      { icon: 'github', link: 'https://github.com/TT23XR-Studio/BON' }
     ]
   },
   head: [
