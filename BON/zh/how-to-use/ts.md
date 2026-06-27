@@ -23,7 +23,7 @@ const config = load("config.bon");
 
 ## API 参考
 
-### `evaluate(source: string, baseDir?: string): unknown`
+### `evaluate(source: string, baseDir?: string, params?: Record<string, unknown>): unknown`
 
 解析并执行 BON 源码字符串，返回 JSON 兼容的 JavaScript 对象。
 
@@ -39,8 +39,11 @@ server-{"host": "localhost", "port": 8080}
 {"server": {server}}
 `);
 
+// 使用编译时参数
+const r3 = evaluate('{"env": $env}', undefined, { env: "production" });
+
 // 使用类
-const r3 = evaluate(`
+const r4 = evaluate(`
 class User {
     "name": "Anonymous",
     fn greet() { return "Hi, " + self.name }
@@ -49,7 +52,7 @@ User { "name": "Bob" }.greet()
 `);
 ```
 
-### `load(filepath: string): unknown`
+### `load(filepath: string, params?: Record<string, unknown>): unknown`
 
 从文件加载并执行 BON 代码。`baseDir` 自动设为文件所在目录。
 
@@ -57,6 +60,9 @@ User { "name": "Bob" }.greet()
 import { load } from "bon-ts";
 
 const config = load("config.bon");
+
+// 带参数加载
+const config = load("config.bon", { env: "production", debug: true });
 ```
 
 ### `loads(source: string, baseDir?: string): unknown`

@@ -21,7 +21,7 @@ result = load("config.bon")
 
 ## API 参考
 
-### `evaluate(source: str, base_dir: str = ".") -> Any`
+### `evaluate(source: str, base_dir: str = ".", params: dict[str, Any] = None) -> Any`
 
 解析并执行 BON 源码字符串，返回 JSON 兼容的 Python 对象。
 
@@ -37,6 +37,9 @@ server-{"host": "localhost", "port": 8080}
 {"server": {server}}
 ''')
 
+# 使用编译时参数
+result = evaluate('{"env": $env, "debug": $debug}', params={"env": "production", "debug": False})
+
 # 使用类
 result = evaluate('''
 class User {
@@ -47,14 +50,18 @@ User { "name": "Bob" }.greet()
 ''')
 ```
 
-### `load(filepath: str) -> Any`
+### `load(filepath: str, params: dict[str, Any] = None) -> Any`
 
 从文件加载并执行 BON 代码。`base_dir` 自动设为文件所在目录，import 路径基于此解析。
 
 ```python
 from bon_py.evaluator import load
 
+# 基础加载
 config = load("config.bon")
+
+# 带参数加载
+config = load("config.bon", params={"env": "production", "debug": True})
 ```
 
 ### `loads(source: str, base_dir: str = ".") -> Any`

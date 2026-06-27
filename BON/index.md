@@ -3,7 +3,7 @@ layout: home
 
 hero:
   name: 'BON'
-  text: 'JSON 的超集，配置界的编译器'
+  text: 'JSON 的超集，配置界的 SASS'
   tagline: '编译期执行的声明式数据转换语言'
   image:
     src: https://images-sxxyrry.pages.dev/BON_Bigger.png

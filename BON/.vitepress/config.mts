@@ -1,18 +1,44 @@
 import { defineConfig } from 'vitepress'
+import { createHighlighter } from 'shiki'
+import type { LanguageRegistration } from 'shiki'
 import bonGrammar from './theme/bon/bon.tmLanguage.json'
+
+const bonLang = {
+  ...bonGrammar,
+  name: 'bon',
+  scopeName: 'source.bon'
+} as LanguageRegistration
+
+const highlighter = await createHighlighter({
+  themes: ['vitesse-light', 'vitesse-dark'],
+  langs: [bonLang]
+})
 
 export default defineConfig({
   markdown: {
-    shikiSetup(shiki) {
-      shiki.loadLanguage({
-        name: 'bon',
-        scopeName: 'source.bon',
-        grammar: bonGrammar,
-      })
+    highlight: (code: string, lang: string) => {
+      const normalizedLang = lang?.toLowerCase() || 'text'
+      try {
+        return highlighter.codeToHtml(code, {
+          lang: normalizedLang,
+          themes: {
+            light: 'vitesse-light',
+            dark: 'vitesse-dark'
+          }
+        })
+      } catch {
+        return highlighter.codeToHtml(code, {
+          lang: 'text',
+          themes: {
+            light: 'vitesse-light',
+            dark: 'vitesse-dark'
+          }
+        })
+      }
     }
   },
   title: 'BON',
-  description: 'JSON 的超集，配置界的编译器',
+  description: 'JSON 的超集，配置界的 SASS',
   base: '/BON/',
   lang: 'zh-CN',
   lastUpdated: true,
@@ -80,7 +106,10 @@ export default defineConfig({
             { text: '模板系统', link: '/zh/reference/syntax/templates' },
             { text: '类', link: '/zh/reference/syntax/classes' },
             { text: '继承', link: '/zh/reference/syntax/inheritance' },
-            { text: '导入系统', link: '/zh/reference/syntax/imports' }
+            { text: '导入系统', link: '/zh/reference/syntax/imports' },
+            { text: 'For 循环表达式', link: '/zh/reference/syntax/for' },
+            { text: 'If/Else 表达式', link: '/zh/reference/syntax/if-else' },
+            { text: '编译时参数', link: '/zh/reference/syntax/params' },
           ]
         },
         {

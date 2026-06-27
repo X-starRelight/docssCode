@@ -39,6 +39,23 @@ bon --indent 4 file.bon
 | `-p, --pretty` | 美化输出（默认） |
 | `-c, --compact` | 紧凑输出 |
 | `--indent N` | 缩进级别（默认 2） |
+| `--param KEY=VALUE` | 编译时参数，支持多个（可重复） |
+
+## 使用编译时参数
+
+```bash
+# 传递字符串参数
+bon config.bon --param env=production
+
+# 传递布尔参数
+bon config.bon --param debug=true --param verbose=false
+
+# 传递数字参数
+bon config.bon --param timeout=30 --param retries=3
+
+# 多个参数
+bon config.bon --param env=prod --param debug=false --param count=5
+```
 
 ## 示例
 
