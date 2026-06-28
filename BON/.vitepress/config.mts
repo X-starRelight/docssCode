@@ -11,7 +11,7 @@ const bonLang = {
 
 const highlighter = await createHighlighter({
   themes: ['vitesse-light', 'vitesse-dark'],
-  langs: [bonLang]
+  langs: [bonLang, 'python', 'typescript', 'javascript', 'json', 'html', 'css', 'bash', 'shellscript', 'yaml', 'markdown']
 })
 
 export default defineConfig({
