@@ -1,6 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "name": "bon",
+  "name": "BON",
   "scopeName": "source.bon",
   "fileTypes": ["bon"],
   "patterns": [
@@ -15,7 +14,7 @@
     { "include": "#number" },
     { "include": "#constant" },
     { "include": "#keyword" },
-    { "include": "#param" },
+    { "include": "#template-reference" },
     { "include": "#property-key" },
     { "include": "#class-name" },
     { "include": "#builtin" },
@@ -126,7 +125,7 @@
     "parameter": {
       "patterns": [
         {
-          "name": "variable.parameter.function.bon",
+          "name": "variable.parameter.bon",
           "match": "[a-zA-Z_][a-zA-Z0-9_]*"
         }
       ]
@@ -213,34 +212,6 @@
         {
           "name": "keyword.control.return.bon",
           "match": "\\b(return)\\b"
-        },
-        {
-          "name": "keyword.control.if.bon",
-          "match": "\\b(if)\\b"
-        },
-        {
-          "name": "keyword.control.else.bon",
-          "match": "\\b(else)\\b"
-        },
-        {
-          "name": "keyword.control.for.bon",
-          "match": "\\b(for)\\b"
-        },
-        {
-          "name": "keyword.control.for.in.bon",
-          "match": "\\b(in)\\b"
-        }
-      ]
-    },
-
-    "param": {
-      "patterns": [
-        {
-          "match": "\\$([a-zA-Z_][a-zA-Z0-9_]*)",
-          "captures": {
-            "0": { "name": "variable.parameter.compile-time.bon" },
-            "1": { "name": "entity.name.parameter.bon" }
-          }
         }
       ]
     },
@@ -365,11 +336,11 @@
           "match": "\\]"
         },
         {
-          "name": "punctuation.definition.parameters.begin.bon",
+          "name": "meta.parameters.begin.bon",
           "match": "\\("
         },
         {
-          "name": "punctuation.definition.parameters.end.bon",
+          "name": "meta.parameters.end.bon",
           "match": "\\)"
         },
         {
