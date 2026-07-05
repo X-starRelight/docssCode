@@ -86,6 +86,28 @@ typedef enum {
 #define KOSS_CAP_ALL        0xFFFFFFFF
 ```
 
+### KossBuiltin（内置模块标志位）
+
+KossJS 使用 Builtin Flags 控制系统控制每个实例的内置模块可见性，与 Capability（沙箱能力）解耦。详见 [内置模块系统指南](/zh/guide/builtin-modules)。
+
+```c
+typedef enum {
+    KOSS_BUILTIN_NONE  = 0,           // 无内置模块
+    KOSS_BUILTIN_NODE  = 1 << 0,      // Node.js 兼容层
+    KOSS_BUILTIN_BUN   = 1 << 1,      // Bun 兼容层
+    KOSS_BUILTIN_DENO  = 1 << 2,      // Deno 兼容层
+    KOSS_BUILTIN_KOSS  = 1 << 3,      // Koss 原生模块
+    KOSS_BUILTIN_ALL   = 0xFFFFFFFF,  // 全部启用
+} KossBuiltin;
+```
+
+| 标志位 | 值 | 控制模块 |
+|--------|-----|----------|
+| `KOSS_BUILTIN_NODE` | `1 << 0` | `koss:node/*`（24 个 Node.js 兼容模块） |
+| `KOSS_BUILTIN_BUN` | `1 << 1` | `koss:bun` |
+| `KOSS_BUILTIN_DENO` | `1 << 2` | `koss:deno` |
+| `KOSS_BUILTIN_KOSS` | `1 << 3` | `koss:io/crypto/system/data/ffi/worker` |
+
 ### Stable 模式
 
 `stable` 参数控制实例的生产就绪模式。`stable=True`（默认）时禁用 FFI 和 Worker 等不稳定功能。详见 [安全与沙箱指南 - 稳定模式](/zh/security-sandbox/security-sandbox#二稳定模式stable)。
@@ -98,12 +120,16 @@ typedef enum {
 
 | 函数名 | 功能描述 |
 |--------|----------|
-| ***koss_create*** | 创建新的 JS 实例（全部能力，stable=true） |
+| ***koss_create*** | 创建新的 JS 实例（全部能力，stable=true，builtins=ALL） |
 | ***koss_create_with_caps*** | 按能力位掩码和 stable 模式创建实例 |
-| ***koss_create_with_modules*** | 创建支持模块加载的 JS 实例（stable=true） |
+| ***koss_create_with_modules*** | 创建支持模块加载的 JS 实例（stable=true，builtins=ALL） |
 | ***koss_create_with_modules_and_caps*** | 创建支持模块加载 + 能力控制 + stable 模式的实例 |
+| ***koss_create_with_builtins*** | 按能力位掩码、Builtin 标志和 stable 模式创建实例 |
+| ***koss_create_with_modules_and_builtins*** | 创建支持模块加载 + 能力控制 + Builtin 标志 + stable 模式的实例 |
 | ***koss_destroy*** | 销毁 JS 实例并释放内存 |
 | ***koss_get_capabilities*** | 查询实例当前能力集（只读） |
+| ***koss_get_builtins*** | 查询实例当前 Builtin 标志位掩码 |
+| ***koss_is_builtin_enabled*** | 检查指定 Builtin 标志位是否启用 |
 | ***koss_is_stable*** | 查询实例是否处于稳定模式 |
 
 ### 安全与沙箱
@@ -193,8 +219,12 @@ typedef enum {
 - [koss_create_with_caps](/zh/api/functions/koss_create_with_caps)
 - [koss_create_with_modules](/zh/api/functions/koss_create_with_modules)
 - [koss_create_with_modules_and_caps](/zh/api/functions/koss_create_with_modules_and_caps)
+- [koss_create_with_builtins](/zh/api/functions/koss_create_with_builtins)
+- [koss_create_with_modules_and_builtins](/zh/api/functions/koss_create_with_builtins)
 - [koss_destroy](/zh/api/functions/koss_destroy)
 - [koss_get_capabilities](/zh/api/functions/koss_get_capabilities)
+- [koss_get_builtins](/zh/api/functions/koss_get_builtins)
+- [koss_is_builtin_enabled](/zh/api/functions/koss_is_builtin_enabled)
 - [koss_is_stable](/zh/api/functions/koss_is_stable)
 
 ### 安全与沙箱

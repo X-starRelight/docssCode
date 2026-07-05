@@ -55,6 +55,8 @@ export default defineConfig({
         items: [
           { text: '什么是 KossJS', link: '/zh/guide/what-is-KossJS' },
           { text: '快速开始', link: '/zh/guide/getting-started' },
+          { text: '内置模块系统', link: '/zh/guide/builtin-modules' },
+          { text: 'ESM Import 支持', link: '/zh/guide/esm-import' },
           { text: '安全与沙箱', link: '/zh/security-sandbox/security-sandbox' },
           { text: '贡献指南', link: '/zh/guide/contributing' },
         ]
@@ -64,7 +66,8 @@ export default defineConfig({
         collapsed: false,
         items: [
           { text: '版本管理规范', link: '/zh/version/version-overview' },
-          { text: '版本变更日志', link: '/zh/version/changelog-dev.5-to-dev.8' },
+          { text: '版本变更日志 (dev.5 → dev.8)', link: '/zh/version/changelog-dev.5-to-dev.8' },
+          { text: '版本变更日志 (dev.8 → dev.9)', link: '/zh/version/changelog-dev.8-to-dev.9' },
         ]
       },
       {
@@ -72,6 +75,11 @@ export default defineConfig({
         collapsed: false,
         items: [
           { text: 'Node.js 内置库支持状态', link: '/zh/reference/nodejs-stdlib-support' },
+          { text: 'koss: 协议模块', link: '/zh/reference/koss-protocol' },
+          { text: 'Node.js 兼容层', link: '/zh/reference/node-compat-layer' },
+          { text: 'Bun 兼容层', link: '/zh/reference/bun-compat-layer' },
+          { text: 'Deno 兼容层', link: '/zh/reference/deno-compat-layer' },
+          { text: 'Koss 原生模块', link: '/zh/reference/koss-native-modules' },
           { text: 'stable 模式替代方案', link: '/zh/reference/stable-alternatives' },
           { text: 'API 概览', link: '/zh/api/API-overview' },
         ]
@@ -96,8 +104,11 @@ export default defineConfig({
               { text: 'koss_create_with_caps', link: '/zh/api/functions/koss_create_with_caps' },
               { text: 'koss_create_with_modules', link: '/zh/api/functions/koss_create_with_modules' },
               { text: 'koss_create_with_modules_and_caps', link: '/zh/api/functions/koss_create_with_modules_and_caps' },
+              { text: 'koss_create_with_builtins', link: '/zh/api/functions/koss_create_with_builtins' },
               { text: 'koss_destroy', link: '/zh/api/functions/koss_destroy' },
               { text: 'koss_get_capabilities', link: '/zh/api/functions/koss_get_capabilities' },
+              { text: 'koss_get_builtins', link: '/zh/api/functions/koss_get_builtins' },
+              { text: 'koss_is_builtin_enabled', link: '/zh/api/functions/koss_is_builtin_enabled' },
               { text: 'koss_is_stable', link: '/zh/api/functions/koss_is_stable' },
             ]
           },

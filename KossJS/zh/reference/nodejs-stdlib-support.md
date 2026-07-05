@@ -1,10 +1,10 @@
 # KossJS Node.js 内置库支持状态
 
-> 更新时间：2026-06-23
-> 测试统计：528 passed, 8 skipped
+> 更新时间：2026-07-05
+> 测试统计：731 passed, 0 failed (Python) | 140 passed, 0 failed (Rust)
 
-KossJS 定位为**同时兼容 Node.js 与 Web 标准**的嵌入式运行时。
-Node.js 模块通过 `require()` 加载；Web API（如 `fetch`、`Headers`、`Response`）作为全局对象直接可用。
+KossJS 定位为**同时兼容 Node.js、Bun、Deno 与 Web 标准**的嵌入式运行时。
+Node.js 模块通过 `require()` 或 `import` 加载；Web API（如 `fetch`、`Headers`、`Response`）作为全局对象直接可用。
 
 ---
 
@@ -105,3 +105,24 @@ Node.js 模块通过 `require()` 加载；Web API（如 `fetch`、`Headers`、`R
 | 搁置 | 4 |
 | Web API | 3 |
 | **总计** | **42** |
+
+---
+
+## ESM Import 支持
+
+0.1.0-dev.9 版本起，所有内置模块支持通过 ES Module `import` 语法导入：
+
+```javascript
+// ESM 风格
+import fs from 'koss:node/fs';
+import path from 'koss:node/path';
+import { createServer } from 'koss:node/http';
+
+// node: 前缀
+import fs from 'node:fs';
+
+// 裸名
+import fs from 'fs';
+```
+
+详见 [ESM Import 支持指南](/zh/guide/esm-import) 和 [koss: 协议模块参考](/zh/reference/koss-protocol)。
