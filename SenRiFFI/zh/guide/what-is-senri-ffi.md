@@ -51,6 +51,23 @@ SenRi FFI 使用**适配器模式**，通过 `FFIAdapter` 接口统一各运行�
    - `NodeAdapter` — 包装 `koffi v3`（字符串类型映射）
 3. 启动时通过 `detectRuntime()` 自动选择合适的适配器
 
+### 自定义后端
+
+SenRi FFI 允许你注入**完全自定义的 FFI 后端**，替换内置的运行时自动检测。只需实现 `LibraryLike` 接口（10 个强制方法 + 3 个可选方法），SenRi 通过适配器包装器将其接入现有架构，上层 API（类型系统、Pointer、struct、alloc/free 等）保持不变。
+
+```ts
+import { Library, types, LibraryLike } from '@tt23xrstudio/senri_ffi';
+
+const myBackend: LibraryLike = {
+  // ... 实现所有强制方法 ...
+};
+
+const lib = Library.load('/path/to/lib.so', myBackend);
+const abs = lib.func('abs', types.int32, [types.int32]);
+```
+
+详见 [自定义后端](/zh/api/custom-backend)。
+
 ## 核心特性
 
 ### 统一类型系统

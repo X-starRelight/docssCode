@@ -26,9 +26,15 @@ import {
   errno,
   strerror,
 
+  // 自定义后端
+  isLibraryLike,
+  getMissingMethods,
+  createBackendWithFallback,
+
   // 错误
   FFIError,
   FFITypeError,
+  FFIBackendError,
 } from '@tt23xrstudio/senri_ffi';
 ```
 
@@ -127,12 +133,25 @@ import {
 
 详见 [内存管理](/zh/api/memory)
 
+### 自定义后端
+
+| 导出 | 说明 | 文档 |
+|------|------|------|
+| `LibraryLike` (类型) | 自定义后端接口契约 | [自定义后端](/zh/api/custom-backend) |
+| `PartialLibraryLike` (类型) | 部分实现类型（所有方法可选） | [自定义后端](/zh/api/custom-backend) |
+| `isLibraryLike(obj)` | 检查对象是否实现 LibraryLike 接口 | [自定义后端](/zh/api/custom-backend) |
+| `getMissingMethods(obj)` | 获取缺失的强制方法名列表 | [自定义后端](/zh/api/custom-backend) |
+| `createBackendWithFallback(partial, builtin)` | 用部分实现 + 内置适配器创建完整后端 | [自定义后端](/zh/api/custom-backend) |
+
+详见 [自定义后端](/zh/api/custom-backend)
+
 ### 错误类型
 
 | 类 | 说明 |
 |----|------|
 | `FFIError` | 通用 FFI 错误 |
 | `FFITypeError` | 类型相关错误（继承自 FFIError） |
+| `FFIBackendError` | 自定义后端相关错误（继承自 FFIError） |
 
 详见 [错误处理](/zh/api/errors)
 
@@ -146,3 +165,4 @@ import {
 - [callback](/zh/api/callback) - 回调函数
 - [内存管理](/zh/api/memory) - 内存分配和释放
 - [错误处理](/zh/api/errors) - 错误类型
+- [自定义后端](/zh/api/custom-backend) - 注入自定义 FFI 实现

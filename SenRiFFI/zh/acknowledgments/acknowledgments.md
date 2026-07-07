@@ -1,33 +1,3 @@
-<script setup>
-import { VPTeamMembers } from 'vitepress/theme'
-
-const members_CoreStudio = [
-  {
-    avatar: 'https://images-sxxyrry.pages.dev/sxxyrryAvatar_old.jpg',
-    name: 'TT23XR Studio',
-    title: '项目创始工作室',
-    links: [
-      { icon: 'github', link: 'https://github.com/TT23XR-Studio' },
-    ]
-  },
-]
-
-const members_Core = [
-  {
-    avatar: 'https://images-sxxyrry.pages.dev/sxxyrryAvatar.jpg',
-    name: 'X-starRelight（来自 TT23XR Studio ）',
-    title: '项目负责人，作者',
-    links: [
-      { icon: 'github', link: 'https://github.com/X-starRelight' },
-    ]
-  },
-]
-
-const members_Contributor = [
-]
-</script>
-
-
 # 鸣谢
 
 SenRi FFI 项目的成功离不开开源社区的支持。
@@ -39,40 +9,31 @@ SenRi FFI 项目的成功离不开开源社区的支持。
 - **项目名称**: SenRi FFI（千里 FFI / せんり FFI）
 - **npm 包名**: `@tt23xrstudio/senri_ffi`
 - **许可证**: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
-- **GitHub**: [https://github.com/TT23XR-Studio/senri_ffi](https://github.com/TT23XR-Studio/senri_ffi)
+- **GitHub**: [github.com/KossJS/senri_ffi](https://github.com/KossJS/senri_ffi)
 
-## 核心依赖项目
-
-暂无
+---
 
 ## 项目团队
 
-### 核心开发工作室
-
-<VPTeamMembers size="small" :members="members_CoreStudio" />
-
 ### 核心开发
 
-<VPTeamMembers size="small" :members="members_Core" />
+**TT23XR Studio**
 
-### 贡献者（暂无）
+| 角色 | 成员 |
+|------|------|
+| 项目创始工作室 | TT23XR Studio |
+| 项目负责人 / 作者 | Sxxyrry ([@sxxyrry](https://github.com/sxxyrry)) |
 
-<VPTeamMembers size="small" :members="members_Contributor" />
-
-## 社区贡献者
-
-感谢以下开发者：
-- 感谢所有提交 Issue 和 Pull Request 的开发者
-- 感谢提供宝贵建议和反馈的用户
-- 感谢帮助完善文档的贡献者
+---
 
 ## 核心依赖
 
-SenRi FFI 自身**除 NodeJS 外零原生依赖**，在 Node.js 上依赖以下包：
+SenRi FFI 自身**零原生依赖**，在 Node.js 上依赖以下可选包：
 
 ### Node.js 后端
 
 - **[koffi v3](https://github.com/nicola-orlandos/koffi)** — Node.js 的 FFI 库（v3 使用字符串类型名）
+  - 通过 peerDependencies 声明为可选依赖
 
 ## 支持的运行时
 

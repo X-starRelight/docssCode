@@ -10,14 +10,18 @@ import { Library } from '@tt23xrstudio/senri_ffi';
 
 ---
 
-## `Library.load(path)` — 加载共享库
+## `Library.load(path, backend?)` — 加载共享库
 
 加载指定路径的原生共享库，返回一个 `Library` 实例。
 
 ```ts
+// 使用内置运行时检测（默认）
 const lib = Library.load(
   process.platform === 'win32' ? 'user32.dll' : 'libm.so.6'
 );
+
+// 使用自定义后端
+const lib2 = Library.load('/path/to/lib.so', myCustomBackend);
 ```
 
 ### 参数
@@ -25,12 +29,20 @@ const lib = Library.load(
 | 参数 | 类型 | 说明 |
 |------|------|------|
 | `path` | `string` | 共享库的文件路径。Windows: `.dll`、Linux: `.so`、macOS: `.dylib` |
+| `backend` | `LibraryLike \| { new (path: string): LibraryLike }` | 可选。自定义 FFI 后端实现 |
+
+`backend` 参数支持两种形式：
+
+- **对象实例** — 直接传入实现了 `LibraryLike` 接口的对象
+- **构造函数** — 传入一个类，调用 `new Backend(path)` 构造实例
+
+不传 `backend` 时，SenRi 使用内置运行时自动检测（KossJS → Bun → Deno → Node.js）。
 
 ### 返回值
 
 `Library` 实例。
 
-### 各运行时实现
+### 各运行时实现（使用内置后端时）
 
 | 运行时 | 实现 |
 |--------|------|
@@ -51,6 +63,29 @@ try {
 }
 ```
 
+### 使用自定义后端
+
+```ts
+import { Library, types, LibraryLike } from '@tt23xrstudio/senri_ffi';
+
+const myBackend: LibraryLike = {
+  open(path) { return /* ... */ },
+  bind(handle, name, retType, argTypes) { return (...args) => /* ... */ },
+  close(handle) { /* ... */ },
+  alloc(size) { return { __ptr: 0n, __buf: new ArrayBuffer(size), __size: size }; },
+  free(ptr) { ptr.__buf = null; },
+  addressOf(buffer) { return 0n; },
+  registerCallback(func, retType, argTypes) { return { __ptr: 0n, __cb: {} }; },
+  unregisterCallback(ptr) { /* ... */ },
+  getErrno() { return 0; },
+  getStrerror(errno) { return ''; },
+};
+
+const lib = Library.load('/path/to/lib.so', myBackend);
+```
+
+详见 [自定义后端](/zh/api/custom-backend)。
+
 ---
 
 **下一步**:
@@ -58,3 +93,4 @@ try {
 - [funcAsync() — 异步函数绑定](/zh/api/funcAsync)
 - [close() — 同步关闭库](/zh/api/close)
 - [closeAsync() — 异步关闭库](/zh/api/closeAsync)
+- [自定义后端 — 注入自定义 FFI 实现](/zh/api/custom-backend)

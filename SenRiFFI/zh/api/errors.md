@@ -5,7 +5,7 @@ SenRi FFI 定义了两个错误类用于统一错误处理。
 ## 导入
 
 ```ts
-import { FFIError, FFITypeError } from '@tt23xrstudio/senri_ffi';
+import { FFIError, FFITypeError, FFIBackendError } from '@tt23xrstudio/senri_ffi';
 ```
 
 ## 错误类型
@@ -32,6 +32,19 @@ class FFITypeError extends FFIError {
   constructor(message: string) {
     super(message);
     this.name = 'FFITypeError';
+  }
+}
+```
+
+### `FFIBackendError`
+
+自定义后端相关错误，继承自 `FFIError`。在自定义后端初始化、验证或运行阶段抛出。
+
+```ts
+class FFIBackendError extends FFIError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'FFIBackendError';
   }
 }
 ```
@@ -90,6 +103,18 @@ class FFITypeError extends FFIError {
 | 未知类型描述符 | `Error` | `'Unknown type descriptor: {json}'` |
 | 符号未找到 | `FFIError` | `'Symbol not found: {name}'` |
 | 无效库句柄 | `FFIError` | `'Invalid library handle'` |
+
+### 自定义后端
+
+| 场景 | 错误类型 | 消息 |
+|------|---------|------|
+| backend 参数类型无效 | `FFITypeError` | `'Invalid backend: expected a LibraryLike object or a constructor, got {type}'` |
+| 后端缺失强制方法 | `FFITypeError` | `'Invalid backend: missing mandatory methods: alloc, free, ...'` |
+| 烟雾测试返回值不符 | `FFITypeError` | `'Smoke test failed: alloc(1) returned object with invalid __ptr'` |
+| 后端 init 抛出异常 | `FFIError` | `'Custom backend init failed: {reason}'` |
+| 后端 bind 抛出异常 | `FFIError` | `'Failed to bind function "{name}": {reason}'` |
+| 切换适配器有活跃资源 | `FFIError` | `'Cannot switch FFI backend: there are N active memory allocation(s) and M active callback(s)...'` |
+| Library 实例过期（适配器已被替换） | `FFIError` | `'Library instance has expired: the global FFI backend has been replaced...'` |
 
 ---
 

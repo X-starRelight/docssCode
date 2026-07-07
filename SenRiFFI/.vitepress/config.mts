@@ -113,6 +113,13 @@ export default defineConfig({
               { text: 'FFIError / FFITypeError', link: '/zh/api/errors' },
             ]
           },
+          {
+            text: '自定义后端',
+            collapsed: true,
+            items: [
+              { text: '自定义后端', link: '/zh/api/custom-backend' },
+            ]
+          },
         ]
       },
       {
