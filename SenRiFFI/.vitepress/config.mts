@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: "SenRi FFI",
-  description: "统一 FFI 库 — KossJS、Node.js、Bun、Deno 一套 API 调用原生 C 库",
+  description: "统一 FFI（外部函数接口）库，提供跨语言的原生 C 函数调用能力。支持 JavaScript/TypeScript 和 Python。",
   base: '/SenRiFFI/',
   lang: 'zh-CN',
   lastUpdated: true,
@@ -42,7 +42,17 @@ export default defineConfig({
       { text: '首页', link: '/' },
       { text: '什么是 SenRi FFI', link: '/zh/guide/what-is-senri-ffi' },
       { text: '快速开始', link: '/zh/guide/getting-started' },
-      { text: 'API 文档', link: '/zh/api/API-overview' },
+      { text: 'API 概览', link: '/zh/api/API-overview' },
+      { text: 'JavaScript', items: [
+        { text: '什么是 SenRi FFI (JS)', link: '/zh/js/guide/what-is-senri-ffi-js' },
+        { text: '快速开始 (JS)', link: '/zh/js/guide/getting-started-js' },
+        { text: 'API 文档 (JS)', link: '/zh/js/api/API-overview-js' },
+      ]},
+      { text: 'Python', items: [
+        { text: '什么是 SenRi FFI (Python)', link: '/zh/py/guide/what-is-senri-ffi-py' },
+        { text: '快速开始 (Python)', link: '/zh/py/guide/getting-started-py' },
+        { text: 'API 文档 (Python)', link: '/zh/py/api/API-overview-py' },
+      ]},
     ],
 
     sidebar: [
@@ -52,11 +62,10 @@ export default defineConfig({
         items: [
           { text: '什么是 SenRi FFI', link: '/zh/guide/what-is-senri-ffi' },
           { text: '快速开始', link: '/zh/guide/getting-started' },
-          { text: '运行时检测', link: '/zh/guide/runtime-detection' },
         ]
       },
       {
-        text: 'API 文档',
+        text: 'API 概览',
         collapsed: false,
         items: [
           { text: 'API 概览', link: '/zh/api/API-overview' },
@@ -123,12 +132,153 @@ export default defineConfig({
         ]
       },
       {
+        text: 'JavaScript',
+        collapsed: false,
+        items: [
+          { text: '什么是 SenRi FFI (JS)', link: '/zh/js/guide/what-is-senri-ffi-js' },
+          { text: '快速开始 (JS)', link: '/zh/js/guide/getting-started-js' },
+          { text: '运行时检测 (JS)', link: '/zh/js/guide/runtime-detection-js' },
+          {
+            text: 'Library',
+            collapsed: true,
+            items: [
+              { text: 'Library.load()', link: '/zh/js/api/library-js' },
+              { text: 'func() — 同步绑定', link: '/zh/js/api/func-js' },
+              { text: 'funcAsync() — 异步绑定', link: '/zh/js/api/funcAsync-js' },
+              { text: 'close() — 同步关闭', link: '/zh/js/api/close-js' },
+              { text: 'closeAsync() — 异步关闭', link: '/zh/js/api/closeAsync-js' },
+            ]
+          },
+          {
+            text: '类型系统',
+            collapsed: true,
+            items: [
+              { text: 'types / pointer / array', link: '/zh/js/api/types-js' },
+            ]
+          },
+          {
+            text: 'Pointer',
+            collapsed: true,
+            items: [
+              { text: 'Pointer', link: '/zh/js/api/pointer-js' },
+            ]
+          },
+          {
+            text: '结构体',
+            collapsed: true,
+            items: [
+              { text: 'struct', link: '/zh/js/api/struct-js' },
+            ]
+          },
+          {
+            text: '回调',
+            collapsed: true,
+            items: [
+              { text: 'callback', link: '/zh/js/api/callback-js' },
+            ]
+          },
+          {
+            text: '内存管理',
+            collapsed: true,
+            items: [
+              { text: 'alloc / free / addressOf / errno / strerror', link: '/zh/js/api/memory-js' },
+            ]
+          },
+          {
+            text: '错误处理',
+            collapsed: true,
+            items: [
+              { text: 'FFIError / FFITypeError', link: '/zh/js/api/errors-js' },
+            ]
+          },
+          {
+            text: '自定义后端',
+            collapsed: true,
+            items: [
+              { text: '自定义后端', link: '/zh/js/api/custom-backend-js' },
+            ]
+          },
+        ]
+      },
+      {
+        text: 'Python',
+        collapsed: false,
+        items: [
+          { text: '什么是 SenRi FFI (Python)', link: '/zh/py/guide/what-is-senri-ffi-py' },
+          { text: '快速开始 (Python)', link: '/zh/py/guide/getting-started-py' },
+          {
+            text: 'Library',
+            collapsed: true,
+            items: [
+              { text: 'Library.load()', link: '/zh/py/api/library-py' },
+              { text: 'func() — 同步绑定', link: '/zh/py/api/func-py' },
+              { text: 'close() — 关闭库', link: '/zh/py/api/close-py' },
+            ]
+          },
+          {
+            text: '类型系统',
+            collapsed: true,
+            items: [
+              { text: 'types / pointer / array', link: '/zh/py/api/types-py' },
+            ]
+          },
+          {
+            text: 'Pointer',
+            collapsed: true,
+            items: [
+              { text: 'Pointer', link: '/zh/py/api/pointer-py' },
+            ]
+          },
+          {
+            text: '结构体',
+            collapsed: true,
+            items: [
+              { text: 'struct', link: '/zh/py/api/struct-py' },
+            ]
+          },
+          {
+            text: '回调',
+            collapsed: true,
+            items: [
+              { text: 'callback', link: '/zh/py/api/callback-py' },
+            ]
+          },
+          {
+            text: '内存管理',
+            collapsed: true,
+            items: [
+              { text: 'alloc / free / address_of / errno / strerror', link: '/zh/py/api/memory-py' },
+            ]
+          },
+          {
+            text: '错误处理',
+            collapsed: true,
+            items: [
+              { text: 'FFIError / FFITypeError', link: '/zh/py/api/errors-py' },
+            ]
+          },
+          {
+            text: '自定义后端',
+            collapsed: true,
+            items: [
+              { text: '自定义后端', link: '/zh/py/api/custom-backend-py' },
+            ]
+          },
+        ]
+      },
+      {
         text: '示例',
         collapsed: true,
         items: [
           { text: '基础用法', link: '/zh/examples/basic-usage' },
           { text: '结构体用法', link: '/zh/examples/struct-usage' },
           { text: '回调用法', link: '/zh/examples/callback-usage' },
+          { text: '基础用法 (JS)', link: '/zh/js/examples/basic-usage-js' },
+          { text: '结构体用法 (JS)', link: '/zh/js/examples/struct-usage-js' },
+          { text: '回调用法 (JS)', link: '/zh/js/examples/callback-usage-js' },
+          { text: '基础用法 (Python)', link: '/zh/py/examples/basic-usage-py' },
+          { text: '结构体用法 (Python)', link: '/zh/py/examples/struct-usage-py' },
+          { text: '回调用法 (Python)', link: '/zh/py/examples/callback-usage-py' },
         ]
       },
       {

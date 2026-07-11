@@ -1,4 +1,4 @@
-# 运行时检测
+# 运行时检测（JavaScript）
 
 SenRi FFI 在模块首次加载时自动检测当前 JavaScript 运行时，并选择相应的 FFI 适配器。
 

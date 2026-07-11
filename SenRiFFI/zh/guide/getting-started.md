@@ -2,29 +2,29 @@
 
 ## 简介
 
-SenRi FFI 是一个统一 FFI 库，让您在 KossJS、Node.js、Bun 和 Deno 上使用同一套 API 调用原生 C 动态库。
+SenRi FFI 是一个统一 FFI 库，让您在 JavaScript/TypeScript 和 Python 中使用同一套 API 调用原生 C 动态库。
 
 本文档将指导您如何安装和使用 SenRi FFI。
 
-## 安装
+---
+
+## JavaScript / TypeScript
+
+### 安装
 
 ```bash
 npm install @tt23xrstudio/senri_ffi
 ```
 
-### Node.js 额外步骤
-
-在 Node.js 上，还需要安装 `koffi`：
+**Node.js 额外步骤** — 还需要安装 `koffi`：
 
 ```bash
 npm install koffi
 ```
 
-### Deno 额外步骤
+**Deno** — 无需额外安装，内置 `Deno.dlopen` 支持。
 
-Deno 无需额外安装，内置 `Deno.dlopen` 支持。
-
-## 第一个 FFI 调用
+### 第一个 FFI 调用
 
 ```ts
 import { Library, types } from '@tt23xrstudio/senri_ffi';
@@ -44,43 +44,89 @@ console.log(abs(-42)); // 输出: 42
 lib.close();
 ```
 
-## 跨平台示例
-
-### Windows — 调用 MessageBox
-
-```ts
-import { Library, types } from '@tt23xrstudio/senri_ffi';
-
-const user32 = Library.load('user32.dll');
-const MessageBoxW = user32.func('MessageBoxW', types.int32, [
-  types.pointer, types.cstring, types.cstring, types.uint32
-]);
-
-MessageBoxW(null, 'Hello from SenRi FFI!', 'Title', 0);
-```
-
-### Linux/macOS — 数学函数
+### 跨平台示例
 
 ```ts
 import { Library, types } from '@tt23xrstudio/senri_ffi';
 
 const libm = Library.load(
-  process.platform === 'darwin' ? 'libSystem.B.dylib' : 'libm.so.6'
+  process.platform === 'win32' ? 'msvcrt.dll'
+    : process.platform === 'darwin' ? 'libSystem.B.dylib'
+    : 'libm.so.6'
 );
 
 const sqrt = libm.func('sqrt', types.float64, [types.float64]);
-const pow = libm.func('pow', types.float64, [types.float64, types.float64]);
+console.log(sqrt(16)); // 4
 
-console.log(sqrt(16));    // 4
-console.log(pow(2, 10));  // 1024
+libm.close();
 ```
+
+---
+
+## Python
+
+### 安装
+
+```bash
+pip install senri-ffi
+```
+
+使用 cffi 后端（可选）：
+
+```bash
+pip install "senri-ffi[cffi]"
+```
+
+系统要求：Python ≥ 3.13
+
+### 第一个 FFI 调用
+
+```python
+from senri_ffi import Library, types
+import platform
+
+# 加载 C 标准库
+if platform.system() == "Windows":
+    lib = Library.load("msvcrt.dll")
+elif platform.system() == "Darwin":
+    lib = Library.load("libSystem.B.dylib")
+else:
+    lib = Library.load("libc.so.6")
+
+# 绑定 C 函数
+abs_fn = lib.func("abs", types.int32, [types.int32])
+
+# 调用 C 函数
+print(abs_fn(-42))  # 输出: 42
+
+# 关闭库释放资源
+lib.close()
+```
+
+### 跨平台示例
+
+```python
+from senri_ffi import Library, types
+import platform
+
+libm = Library.load(
+    "libSystem.B.dylib" if platform.system() == "Darwin" else "libm.so.6"
+)
+
+sqrt = libm.func("sqrt", types.float64, [types.float64])
+print(sqrt(16))  # 4.0
+
+libm.close()
+```
+
+---
 
 ## 基本类型系统
 
 ```ts
+// JavaScript/TypeScript
 import { types } from '@tt23xrstudio/senri_ffi';
 
-// 13 种基本 C 类型
 types.int32    // C: int32_t
 types.float64  // C: double
 types.cstring  // C: const char*
@@ -88,63 +134,69 @@ types.pointer  // C: void*
 types.void     // C: void
 ```
 
+```python
+# Python
+from senri_ffi import types
+
+types.int32    # C: int32_t
+types.float64  # C: double
+types.cstring  # C: const char*
+types.pointer  # C: void*
+types.void     # C: void
+```
+
 ## 复合类型构造
 
 ```ts
+// JavaScript/TypeScript
 import { pointer, array } from '@tt23xrstudio/senri_ffi';
 
 pointer(types.int32);      // int32_t*
 array(types.uint8, 256);   // uint8_t[256]
 ```
 
+```python
+# Python
+from senri_ffi import pointer, array
+
+pointer(types.int32)    # int32_t*
+array(types.uint8, 256) # uint8_t[256]
+```
+
 ## 内存管理
 
 ```ts
-import { alloc, free, addressOf } from '@tt23xrstudio/senri_ffi';
+// JavaScript/TypeScript
+import { alloc, free } from '@tt23xrstudio/senri_ffi';
 
-// 分配 64 字节
 const ptr = alloc(64);
 ptr.writeInt32(0, 42);
 console.log(ptr.readInt32(0)); // 42
-
-// 释放
 free(ptr);
 ```
 
-## 异步调用
+```python
+# Python
+from senri_ffi import alloc, free
 
-```ts
-import { Library, types } from '@tt23xrstudio/senri_ffi';
-
-const lib = Library.load('libc.so.6');
-const sleep = lib.funcAsync('sleep', types.uint32, [types.uint32]);
-await sleep(2); // 不阻塞主线程
-await lib.closeAsync();
+ptr = alloc(64)
+ptr.write_int32(0, 42)
+print(ptr.read_int32(0))  # 42
+free(ptr)
 ```
-
-## 运行时确认
-
-你可以通过以下代码确认当前使用的运行时：
-
-```ts
-// KossJS
-typeof globalThis._senri_ffi !== 'undefined' && globalThis._senri_ffi
-
-// Bun
-typeof Bun !== 'undefined' && Bun.FFI
-
-// Deno
-typeof Deno !== 'undefined' && Deno.dlopen
-
-// Node.js
-typeof process !== 'undefined' && process.versions && process.versions.node
-```
-
-SenRi FFI 会在模块加载时自动检测并选择正确的后端。
 
 ---
 
-**下一步**:
-- [运行时检测详解](/zh/guide/runtime-detection) - 了解自动检测机制
-- [API 概览](/zh/api/API-overview) - 浏览所有 API
-- [Library 详解](/zh/api/library) - 深入了解库加载和函数绑定
+## 下一步
+
+### JavaScript / TypeScript
+
+- [JS 运行时检测](/zh/js/guide/runtime-detection) - 了解自动检测机制
+- [JS API 概览](/zh/js/api/API-overview) - 浏览所有 JS API
+- [JS Library 详解](/zh/js/api/library) - 深入了解库加载和函数绑定
+
+### Python
+
+- [Python 快速开始](/zh/py/guide/getting-started-py) - Python 版详细指南
+- [Python API 概览](/zh/py/api/API-overview-py) - 浏览所有 Python API
+- [Python Library 详解](/zh/py/api/library-py) - 深入了解库加载和函数绑定

@@ -28,16 +28,23 @@ SenRi FFI 项目的成功离不开开源社区的支持。
 
 ## 核心依赖
 
-SenRi FFI 自身**零原生依赖**，在 Node.js 上依赖以下可选包：
+SenRi FFI 自身**零原生依赖**：
 
-### Node.js 后端
+### JavaScript 版本
 
 - **[koffi v3](https://github.com/nicola-orlandos/koffi)** — Node.js 的 FFI 库（v3 使用字符串类型名）
   - 通过 peerDependencies 声明为可选依赖
 
-## 支持的运行时
+### Python 版本
 
-SenRi FFI 支持以下 JavaScript 运行时：
+- **ctypes** — Python 标准库，无需额外安装
+- **[cffi](https://cffi.readthedocs.io/)** — 可选依赖，提供更灵活的 FFI 支持
+
+## 支持的语言和运行时
+
+SenRi FFI 支持以下语言和运行时：
+
+### JavaScript / TypeScript
 
 | 运行时 | 说明 |
 |--------|------|
@@ -45,6 +52,13 @@ SenRi FFI 支持以下 JavaScript 运行时：
 | [Bun](https://bun.sh/) | 快速的全能 JavaScript 运行时（`Bun.FFI`，v1.3+），内置 FFI 支持 |
 | [Deno](https://deno.com/) | 安全的 JavaScript/TypeScript 运行时（`Deno.dlopen`），原生异步 FFI |
 | [Node.js](https://nodejs.org/) | 广泛使用的 JavaScript 运行时，通过 koffi 提供 FFI 支持 |
+
+### Python
+
+| 后端 | 说明 |
+|------|------|
+| `ctypes` | Python 标准库，所有平台可用 |
+| `cffi` | 可选，更灵活的 FFI 支持 |
 
 ---
 
