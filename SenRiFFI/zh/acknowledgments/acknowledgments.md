@@ -1,3 +1,40 @@
+<script setup>
+import { VPTeamMembers } from 'vitepress/theme'
+
+const members_CoreStudio = [
+  {
+    avatar: 'https://images-sxxyrry.pages.dev/sxxyrryAvatar_old.jpg',
+    name: 'TT23XR Studio',
+    title: '项目创始工作室',
+    links: [
+      { icon: 'github', link: 'https://github.com/sxxyrry' },
+    ]
+  },
+]
+
+const members_Core = [
+  {
+    avatar: 'https://images-sxxyrry.pages.dev/sxxyrryAvatar.jpg',
+    name: 'XstarRelight（来自 TT23XR Studio ）',
+    title: '项目负责人，作者',
+    links: [
+      { icon: 'github', link: 'https://github.com/sxxyrry' },
+    ]
+  },
+  {
+    avatar: 'https://images-sxxyrry.pages.dev/Wangziqi0Avatar.png',
+    name: 'Wangziqi0',
+    title: '核心开发者',
+    links: [
+      { icon: 'github', link: 'https://github.com/Wangziqi0' }
+    ]
+  },
+]
+
+const members_Contributor = [
+]
+</script>
+
 # 鸣谢
 
 SenRi FFI 项目的成功离不开开源社区的支持。
@@ -8,32 +45,35 @@ SenRi FFI 项目的成功离不开开源社区的支持。
 
 - **项目名称**: SenRi FFI（千里 FFI / せんり FFI）
 - **npm 包名**: `@tt23xrstudio/senri_ffi`
+- **pypi 包名**: `senri-ffi`
 - **许可证**: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
-- **GitHub**: [github.com/KossJS/senri_ffi](https://github.com/KossJS/senri_ffi)
+- **GitHub**: [github.com/TT23XR-Studio/senri_ffi](https://github.com/TT23XR-Studio/senri_ffi)
 
 ---
 
 ## 项目团队
 
+### 核心开发工作室
+
+<VPTeamMembers size="small" :members="members_CoreStudio" />
+
 ### 核心开发
 
-**TT23XR Studio**
+<VPTeamMembers size="small" :members="members_Core" />
 
-| 角色 | 成员 |
-|------|------|
-| 项目创始工作室 | TT23XR Studio |
-| 项目负责人 / 作者 | Sxxyrry ([@sxxyrry](https://github.com/sxxyrry)) |
+### 贡献者（暂无）
+
+<VPTeamMembers size="small" :members="members_Contributor" />
 
 ---
 
 ## 核心依赖
 
-SenRi FFI 自身**零原生依赖**：
+SenRi FFI 自身几乎无依赖：
 
 ### JavaScript 版本
 
 - **[koffi v3](https://github.com/nicola-orlandos/koffi)** — Node.js 的 FFI 库（v3 使用字符串类型名）
-  - 通过 peerDependencies 声明为可选依赖
 
 ### Python 版本
 

@@ -88,5 +88,5 @@ TLD 的版本号**必须**遵循以下格式：
 
 | 版本 | 日期 | 修订说明 | 作者 |
 | :--- | :--- | :--- | :--- |
-| 0.1.0-dev.6 | 2026/04/12 | 新增自动重试机制、速度限制、代理支持、性能统计、Headers 支持、SFTP 主机密钥验证；新增 metrics/logging/progress_tracker/buffer_pool/adaptive_concurrency 模块；新增条件编译特性 | Sxxyrry |
-| 0.1.0 | 2026/2/27 | 初始版本，基于 SemVer 2.0.0 建立 | Sxxyrry|
+| 0.1.0-dev.6 | 2026/04/12 | 新增自动重试机制、速度限制、代理支持、性能统计、Headers 支持、SFTP 主机密钥验证；新增 metrics/logging/progress_tracker/buffer_pool/adaptive_concurrency 模块；新增条件编译特性 | XstarRelight |
+| 0.1.0 | 2026/2/27 | 初始版本，基于 SemVer 2.0.0 建立 | XstarRelight|

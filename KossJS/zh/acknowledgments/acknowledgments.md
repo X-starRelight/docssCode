@@ -15,7 +15,7 @@ const members_CoreStudio = [
 const members_Core = [
   {
     avatar: 'https://images-sxxyrry.pages.dev/sxxyrryAvatar.jpg',
-    name: 'Sxxyrry（来自 TT23XR Studio ）',
+    name: 'XstarRelight（来自 TT23XR Studio ）',
     title: '项目负责人，作者',
     links: [
       { icon: 'github', link: 'https://github.com/sxxyrry' },
