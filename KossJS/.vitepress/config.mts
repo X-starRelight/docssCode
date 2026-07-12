@@ -85,6 +85,13 @@ export default defineConfig({
         ]
       },
       {
+        text: '社区编写',
+        collapsed: false,
+        items: [
+          { text: 'FAQ', link: '/zh/community/COMMUNITY_FAQ' },
+        ]
+      },
+      {
         text: 'API 文档',
         collapsed: false,
         items: [
@@ -226,7 +233,7 @@ export default defineConfig({
       },
       {
         text: '示例',
-        collapsed: true,
+        collapsed: false,
         items: [
           { text: '基础示例', link: '/zh/examples/example-basic' },
         ]
