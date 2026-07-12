@@ -48,7 +48,7 @@ export default {
         if (typeof window !== 'undefined' && window.Footer) {
           footerInstance = new window.Footer({
             name: 'KossJS',
-            description: 'KossJS 核心（KossJS Core）是一个高性能、跨平台、多语言可调用的 JavaScript 引擎内核。它专门为外部项目提供强大的 JavaScript 执行支持能力，让开发者能够轻松集成专业级的 JavaScript 功能到自己的应用程序中。采用 GNU AGPL v3.0 协议 开源。',
+            description: 'KossJS 核心（KossJS Core）是一个高性能、跨平台、多语言可调用的 JavaScript 引擎内核。它专门为外部项目提供强大的 JavaScript 执行支持能力，让开发者能够轻松集成专业级的 JavaScript 功能到自己的应用程序中。采用 [GNU AGPL v3.0](https://gnu.ac.cn/licenses/agpl-3.0.html) 协议并附带 TT23XR Studio 第 7 节附加权限《非本软件模块的源代码公开义务豁免》开源。',
             quicks: []
           }, 'https://footerjs-sxxyrry.pages.dev/');
         } else {
