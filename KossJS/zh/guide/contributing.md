@@ -77,7 +77,7 @@ cargo build --release
 
 ## 许可证
 
-通过向 KossJS 项目贡献代码，您同意您的贡献将遵循项目的 [GNU AGPL v3.0](https://www.gnu.org/licenses/agpl-3.0.en.html) 许可证。
+通过向 KossJS 项目贡献代码，您同意您的贡献将遵循项目的 本项目采用 [GNU AGPL v3.0](https://gnu.ac.cn/licenses/agpl-3.0.html) 协议和其附带的 TT23XR Studio 第 7 节附加权限《非本软件模块的源代码公开义务豁免》。
 
 ---
 
