@@ -9,7 +9,7 @@
 
 ## 开源协议
 
-本项目采用 [GNU AGPL v3.0](https://gnu.ac.cn/licenses/agpl-3.0.html) 协议并附带 TT23XR Studio 第 7 节附加权限《非本软件模块的源代码公开义务豁免》开源。
+本项目采用 [GNU AGPL v3.0](https://gnu.ac.cn/licenses/agpl-3.0.html) 协议并附带 TT23XR Studio 第 7 节附加权限《独立模块闭源组合例外》开源。
 
 ## 核心特性
 
