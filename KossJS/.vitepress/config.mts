@@ -244,6 +244,7 @@ export default defineConfig({
         items: [
           { text: '鸣谢', link: '/zh/acknowledgments/acknowledgments' },
           { text: '贡献指南', link: '/zh/guide/contributing' },
+          { text: 'KossJS 诞生记', link: '/zh/other/origin-story'},
           { text: '回到文档汇总', link: '/back/' },
         ],
       },
