@@ -42,6 +42,36 @@
  * - ***danger***: Used to show error, or dangerous message to the users. Used
  *   in custom container, badges, etc.
  * -------------------------------------------------------------------------- */
+@import './fonts/sliced/SarasaMonoSC-BoldItalic/font.css';
+@import './fonts/sliced/SarasaMonoSC-Bold/font.css';
+@import './fonts/sliced/SarasaMonoSC-Italic/font.css';
+@import './fonts/sliced/SarasaMonoSC-Regular/font.css';
+
+
+/* 应用于所有元素的基础样式 */
+* {
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'SarasaMonoSC-Regular';
+}
+
+em {
+  font-family: 'SarasaMonoSC-Italic';
+}
+
+strong {
+  font-family: 'SarasaMonoSC-Bold';
+  font-weight: bolder !important;
+  font-size: 1.2em;
+}
+
+em strong {
+  font-family: 'SarasaMonoSC-BoldItalic' !important;
+}
+
+pre * {
+  white-space: pre; /* 保留空格和换行，文本不自动换行 */
+}
 
 :root {
   --vp-c-brand-1: #6360ff;
@@ -55,16 +85,6 @@
   --vp-c-brand-2: #a9a7ff;
   --vp-c-brand-3: #6360ff;
   --vp-c-brand-soft: rgba(139, 136, 255, 0.16);
-}
-
-/* 应用于所有元素的基础样式 */
-* {
-  padding: 0;
-  box-sizing: border-box;
-}
-
-pre * {
-  white-space: pre;
 }
 
 .VPDocFooter {
@@ -205,22 +225,12 @@ html.dark .shiki .line {
   --vp-custom-block-tip-code-bg: var(--vp-c-brand-soft);
 }
 
-/* 应用于所有元素的基础样式 */
-* {
-  padding: 0;
-  box-sizing: border-box;
-}
-
 body {
   /* background-color: var(--bg-primary); */
   /* color: var(--text-primary); */
   line-height: 1.6;
   padding: 20px;
   min-height: 100vh;
-}
-
-pre * {
-  white-space: pre; /* 保留空格和换行，文本不自动换行 */
 }
 
 .VPDocFooter {

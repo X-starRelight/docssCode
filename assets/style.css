@@ -1,41 +1,18 @@
-@import './fonts/sliced/SarasaMonoSC-ExtraLightItalic/font.css';
 @import './fonts/sliced/SarasaMonoSC-BoldItalic/font.css';
 @import './fonts/sliced/SarasaMonoSC-Bold/font.css';
-@import './fonts/sliced/SarasaMonoSC-LightItalic/font.css';
-@import './fonts/sliced/SarasaMonoSC-Light/font.css';
+@import './fonts/sliced/SarasaMonoSC-Italic/font.css';
+@import './fonts/sliced/SarasaMonoSC-Regular/font.css';
 
-
-:root {
-    --bg-primary: #121212;
-    --bg-secondary: #1e1e1e;
-    --bg-tertiary: #2d2d2d;
-    --text-primary: #e0e0e0;
-    --text-secondary: #a0a0a0;
-    --accent-color: #6360ff;
-    --accent-secondary: #ff6b4a;
-    --border-radius:rgb(74, 116, 255);
-    --transition: all 0.3s ease;
-    --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-}
 
 /* 应用于所有元素的基础样式 */
 * {
   padding: 0;
   box-sizing: border-box;
-  font-family: 'SarasaMonoSC-Light';
-  /* color: var(--text-primary); */
-}
-
-body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  line-height: 1.6;
-  padding: 20px;
-  min-height: 100vh;
+  font-family: 'SarasaMonoSC-Regular';
 }
 
 em {
-  font-family: 'SarasaMonoSC-LightItalic';
+  font-family: 'SarasaMonoSC-Italic';
 }
 
 strong {
@@ -50,4 +27,17 @@ em strong {
 
 pre * {
   white-space: pre; /* 保留空格和换行，文本不自动换行 */
+}
+
+:root {
+    --bg-primary: #121212;
+    --bg-secondary: #1e1e1e;
+    --bg-tertiary: #2d2d2d;
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0a0;
+    --accent-color: #6360ff;
+    --accent-secondary: #ff6b4a;
+    --border-radius:rgb(74, 116, 255);
+    --transition: all 0.3s ease;
+    --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
