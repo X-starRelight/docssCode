@@ -212,7 +212,9 @@ export default defineConfig({
             items: [
               { text: 'Library.load()', link: '/zh/py/api/library-py' },
               { text: 'func() — 同步绑定', link: '/zh/py/api/func-py' },
+              { text: 'funcAsync() — 异步绑定', link: '/zh/py/api/funcAsync-py' },
               { text: 'close() — 关闭库', link: '/zh/py/api/close-py' },
+              { text: 'closeAsync() — 异步关闭', link: '/zh/py/api/closeAsync-py' },
             ]
           },
           {
