@@ -48,7 +48,7 @@ export default {
         if (typeof window !== 'undefined' && window.Footer) {
           footerInstance = new window.Footer({
             name: 'SenRi FFI',
-            description: '统一 FFI 库 — SenRi FFI 是一个统一的、跨运行时的高性能原生接口库，为 KossJS、Node.js、Bun 和 Deno 等 JavaScript 环境提供一套一致的 API 来调用原生 C 库。它专门为开发者消除不同 JavaScript 运行时的 FFI 差异，让您能够轻松地在任意支持的平台上调用本地动态库中的函数。采用 Apache 2.0 协议开源。',
+            description: '统一 FFI 库 — SenRi FFI 是一个统一的、跨运行时的高性能原生接口库，为 JavaScript 环境和 Python 环境提供一套一致的 API 来调用原生 C 库。它专门为开发者消除不同 JavaScript 运行时和 Python FFI 后端的 FFI 差异，让您能够轻松地在任意支持的平台上调用本地动态库中的函数。采用 Apache 2.0 协议开源。',
             quicks: []
           }, 'https://footerjs-sxxyrry.pages.dev/');
         } else {

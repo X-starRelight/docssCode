@@ -46,6 +46,7 @@ SenRi FFI 项目的成功离不开开源社区的支持。
 - **项目名称**: SenRi FFI（千里 FFI / せんり FFI）
 - **npm 包名**: `@tt23xrstudio/senri_ffi`
 - **pypi 包名**: `senri-ffi`
+- **python 导入包名**: `senri_ffi`
 - **许可证**: [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 - **GitHub**: [github.com/TT23XR-Studio/senri_ffi](https://github.com/TT23XR-Studio/senri_ffi)
 
