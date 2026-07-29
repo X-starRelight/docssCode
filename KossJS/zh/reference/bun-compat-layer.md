@@ -4,7 +4,8 @@
 
 > **版本锚定**：基于 Bun **v1.1.x** 实现  
 > **Builtin 标志**：`KOSS_BUILTIN_BUN`（`1 << 1`）  
-> **文件位置**：`src/js_shims/bun_shim.js`（142 行）
+> **文件位置**：`src/js_shims/bun_shim.js`（160 行）  
+> **底层依赖**：委托 `koss:io`、`koss:crypto`、`koss:system` 实现
 
 ---
 
@@ -53,7 +54,7 @@ console.log(Bun.build);  // 'koss-bun-compat'
 
 **类型：** `object`
 
-返回环境变量对象（映射到 `process.env`）。
+返回环境变量对象（底层使用 `koss:system.env()`）。
 
 ```javascript
 const PATH = Bun.env.PATH;
@@ -66,7 +67,7 @@ const HOME = Bun.env.HOME;
 
 **类型：** `string[]`
 
-返回命令行参数列表（映射到 `process.argv`）。
+返回命令行参数列表（当前简化实现，返回空数组）。
 
 ```javascript
 console.log(Bun.argv);  // ['node', 'script.js', '--flag']
@@ -254,6 +255,53 @@ const uuid = Bun.randomUUIDv7();
 ```javascript
 const resolved = Bun.resolve('/tmp/../hello.txt');
 console.log(resolved);  // '/hello.txt'
+```
+
+---
+
+### Bun.hash(algorithm, data)
+
+**类型：** `function`  
+**参数：**
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `algorithm` | `string` | 哈希算法（`'sha256'` 等） |
+| `data` | `string` | 要哈希的数据 |
+
+计算数据的哈希值。
+
+```javascript
+const hash = Bun.hash('sha256', 'hello');
+```
+
+---
+
+### Bun.malloc(size)
+
+**类型：** `function`  
+**状态：** ❌ 不支持（抛出错误）
+
+```javascript
+try {
+    Bun.malloc(1024);
+} catch (e) {
+    console.log(e.message);  // Bun malloc is not implemented in KossJS
+}
+```
+
+---
+
+### Bun.gc()
+
+**类型：** `function`  
+**状态：** ❌ 不支持（抛出错误）
+
+```javascript
+try {
+    Bun.gc();
+} catch (e) {
+    console.log(e.message);  // Bun.gc is not implemented in KossJS
+}
 ```
 
 ---

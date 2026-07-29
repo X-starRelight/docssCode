@@ -139,12 +139,29 @@ pub struct KossBuiltinModule {
 | `node/diagnostics_channel` | `KOSS_BUILTIN_NODE` | `node_shim/diagnostics_channel.js` | `false` |
 | `bun` | `KOSS_BUILTIN_BUN` | `bun_shim.js` | `false` |
 | `deno` | `KOSS_BUILTIN_DENO` | `deno_shim.js` | `false` |
-| `io` | `KOSS_BUILTIN_KOSS` | `koss_shim/io.js` | `false` |
+| `assert` | `KOSS_BUILTIN_KOSS` | `koss_shim/assert.js` | `false` |
+| `buffer` | `KOSS_BUILTIN_KOSS` | `koss_shim/buffer.js` | `false` |
+| `constants` | `KOSS_BUILTIN_KOSS` | `koss_shim/constants.js` | `false` |
 | `crypto` | `KOSS_BUILTIN_KOSS` | `koss_shim/crypto.js` | `false` |
-| `system` | `KOSS_BUILTIN_KOSS` | `koss_shim/system.js` | `false` |
 | `data` | `KOSS_BUILTIN_KOSS` | `koss_shim/data.js` | `false` |
+| `diagnostics_channel` | `KOSS_BUILTIN_KOSS` | `koss_shim/diagnostics_channel.js` | `false` |
+| `events` | `KOSS_BUILTIN_KOSS` | `koss_shim/events.js` | `false` |
 | `ffi` | `KOSS_BUILTIN_KOSS` | `koss_shim/ffi.js` | `false` |
+| `http` | `KOSS_BUILTIN_KOSS` | `koss_shim/http.js` | `false` |
+| `io` | `KOSS_BUILTIN_KOSS` | `koss_shim/io.js` | `false` |
+| `net` | `KOSS_BUILTIN_KOSS` | `koss_shim/net.js` | `false` |
+| `os` | `KOSS_BUILTIN_KOSS` | `koss_shim/os.js` | `false` |
+| `path` | `KOSS_BUILTIN_KOSS` | `koss_shim/path.js` | `false` |
+| `process` | `KOSS_BUILTIN_KOSS` | `koss_shim/process.js` | `false` |
+| `stream` | `KOSS_BUILTIN_KOSS` | `koss_shim/stream.js` | `false` |
+| `string_decoder` | `KOSS_BUILTIN_KOSS` | `koss_shim/string_decoder.js` | `false` |
+| `system` | `KOSS_BUILTIN_KOSS` | `koss_shim/system.js` | `false` |
+| `timers` | `KOSS_BUILTIN_KOSS` | `koss_shim/timers.js` | `false` |
+| `trace_events` | `KOSS_BUILTIN_KOSS` | `koss_shim/trace_events.js` | `false` |
+| `url` | `KOSS_BUILTIN_KOSS` | `koss_shim/url.js` | `false` |
+| `util` | `KOSS_BUILTIN_KOSS` | `koss_shim/util.js` | `false` |
 | `worker` | `KOSS_BUILTIN_KOSS` | `koss_shim/worker.js` | `false` |
+| `zlib` | `KOSS_BUILTIN_KOSS` | `koss_shim/zlib.js` | `false` |
 | `internal/fs` | `KOSS_BUILTIN_NONE` | `internal/fs.js` | `true` |
 | `internal/net` | `KOSS_BUILTIN_NONE` | `internal/net.js` | `true` |
 | `internal/crypto` | `KOSS_BUILTIN_NONE` | `internal/crypto.js` | `true` |
@@ -320,7 +337,7 @@ KossBuiltinError: Cannot import 'koss:internal/fs'
 ```
 KossBuiltinError: Cannot resolve module 'koss:unknown_xyz'
   - no such builtin module: unknown_xyz
-  - Available modules: node/fs, node/path, bun, deno, io, crypto, ...
+   - Available modules: node/fs, node/path, bun, deno, io, crypto, assert, buffer, events, http, ...
 ```
 
 ---

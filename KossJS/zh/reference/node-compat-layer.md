@@ -3,39 +3,40 @@
 本文档详细列出 KossJS 的 Node.js 兼容层（`koss:node/*`）所有模块及其导出的 API。
 
 > **版本锚定**：基于 Node.js **v20.x LTS** 实现  
-> **Builtin 标志**：`KOSS_BUILTIN_NODE`（`1 << 0`）
+> **Builtin 标志**：`KOSS_BUILTIN_NODE`（`1 << 0`）  
+> **架构**：所有模块底层委托 `koss:*` 标准库实现（参见 [Koss 原生模块参考](/zh/reference/koss-native-modules)）
 
 ---
 
 ## 模块总览
 
-| 模块 | 导入路径 | 说明 | 行数 |
+| 模块 | 导入路径 | 实现 | 行数 |
 |------|----------|------|------|
-| assert | `koss:node/assert` | 断言库 | 193 |
-| buffer | `koss:node/buffer` | Buffer 类 | 291 |
-| constants | `koss:node/constants` | 系统常量 | 64 |
-| crypto | `koss:node/crypto` | 加密模块 | 112 |
-| dgram | `koss:node/dgram` | UDP 数据报 | 78 |
-| diagnostics_channel | `koss:node/diagnostics_channel` | 诊断通道 | 55 |
-| dns | `koss:node/dns` | DNS 解析 | 81 |
-| events | `koss:node/events` | 事件发射器 | 242 |
-| fs | `koss:node/fs` | 文件系统 | 231 |
-| http | `koss:node/http` | HTTP | 133 |
-| https | `koss:node/https` | HTTPS | 39 |
-| net | `koss:node/net` | TCP 网络 | 132 |
-| os | `koss:node/os` | 操作系统信息 | 144 |
-| path | `koss:node/path` | 路径处理 | 373 |
-| perf_hooks | `koss:node/perf_hooks` | 性能钩子 | 115 |
-| process | `koss:node/process` | 进程信息 | 5 |
-| querystring | `koss:node/querystring` | 查询字符串 | 81 |
-| stream | `koss:node/stream` | 流操作 | 204 |
-| string_decoder | `koss:node/string_decoder` | 字符串解码器 | 62 |
-| timers | `koss:node/timers` | 定时器 | 74 |
-| tls | `koss:node/tls` | TLS/SSL | 52 |
-| trace_events | `koss:node/trace_events` | 追踪事件 | 25 |
-| url | `koss:node/url` | URL 解析 | 280 |
-| util | `koss:node/util` | 工具函数 | 181 |
-| zlib | `koss:node/zlib` | 压缩/解压 | 91 |
+| assert | `koss:node/assert` | 委托 `koss:assert` | 8 |
+| buffer | `koss:node/buffer` | 委托 `koss:buffer` | 16 |
+| constants | `koss:node/constants` | 委托 `koss:constants` | 8 |
+| crypto | `koss:node/crypto` | 内联 JS polyfill | 203 |
+| dgram | `koss:node/dgram` | 内联 JS polyfill（TCP 桥接） | 57 |
+| diagnostics_channel | `koss:node/diagnostics_channel` | 委托 `koss:diagnostics_channel` | 8 |
+| dns | `koss:node/dns` | 内联 JS polyfill | 108 |
+| events | `koss:node/events` | 委托 `koss:events` | 13 |
+| fs | `koss:node/fs` | 委托 `koss:io` + 包装层 | 238 |
+| http | `koss:node/http` | 委托 `koss:http` | 8 |
+| https | `koss:node/https` | 委托 `koss:http` + 包装层 | 35 |
+| net | `koss:node/net` | 委托 `koss:net` | 8 |
+| os | `koss:node/os` | 委托 `koss:system` | 8 |
+| path | `koss:node/path` | 委托 `koss:path` | 8 |
+| perf_hooks | `koss:node/perf_hooks` | 内联 JS shim | 118 |
+| process | `koss:node/process` | 委托 `koss:process` | 8 |
+| querystring | `koss:node/querystring` | 委托 `koss:querystring` | 8 |
+| stream | `koss:node/stream` | 委托 `koss:stream` | 8 |
+| string_decoder | `koss:node/string_decoder` | 委托 `koss:string_decoder` | 8 |
+| timers | `koss:node/timers` | 委托 `koss:timers` | 8 |
+| tls | `koss:node/tls` | 内联 JS polyfill（基于 `koss:net`） | 46 |
+| trace_events | `koss:node/trace_events` | 委托 `koss:trace_events` | 8 |
+| url | `koss:node/url` | 委托 `koss:url` | 8 |
+| util | `koss:node/util` | 委托 `koss:util` | 8 |
+| zlib | `koss:node/zlib` | 委托 `koss:zlib` | 8 |
 
 ---
 

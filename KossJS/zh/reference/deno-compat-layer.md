@@ -4,7 +4,8 @@
 
 > **版本锚定**：基于 Deno **v2.0.x** 实现  
 > **Builtin 标志**：`KOSS_BUILTIN_DENO`（`1 << 2`）  
-> **文件位置**：`src/js_shims/deno_shim.js`（210 行）
+> **文件位置**：`src/js_shims/deno_shim.js`（240 行）  
+> **底层依赖**：委托 `koss:io`、`koss:crypto`、`koss:system` 实现
 
 ---
 
@@ -50,7 +51,7 @@ console.log(Deno.version.typescript); // '5.6'
 
 **类型：** `object`
 
-环境变量对象（映射到 `process.env`）。
+环境变量对象（底层使用 `koss:system.env()`）。
 
 ```javascript
 const PATH = Deno.env.PATH;
@@ -406,7 +407,12 @@ console.log(ip);  // '93.184.216.34'
 | `crypto.getRandomValues(arr)` | `function` | 填充随机值 |
 | `crypto.randomUUID()` | `function` | 生成 UUID v4 |
 | `crypto.subtle.digest(algorithm, data)` | `async function` | 计算摘要 |
-
+| `crypto.subtle.encrypt(algorithm, key, data)` | `async function` | 加密数据 |
+| `crypto.subtle.decrypt(algorithm, key, data)` | `async function` | 解密数据 |
+| `crypto.subtle.generateKey(algorithm)` | `async function` | 生成密钥（支持 Ed25519） |
+| `crypto.subtle.sign(algorithm, key, data)` | `async function` | 签名数据 |
+| `crypto.subtle.verify(algorithm, key, signature, data)` | `async function` | 验证签名 |
+ 
 ```javascript
 // 随机值
 const arr = new Uint8Array(16);
@@ -417,6 +423,12 @@ const uuid = Deno.crypto.randomUUID();
 
 // 摘要
 const hash = await Deno.crypto.subtle.digest('SHA-256', 'hello');
+
+// 加密
+const ct = await Deno.crypto.subtle.encrypt('AES-GCM', key, data);
+
+// 解密
+const pt = await Deno.crypto.subtle.decrypt('AES-GCM', key, ct);
 ```
 
 ---
@@ -434,6 +446,97 @@ const hash = await Deno.crypto.subtle.digest('SHA-256', 'hello');
 const id = Deno.setTimeout(() => console.log('timeout'), 1000);
 Deno.clearTimeout(id);
 ```
+
+---
+
+---
+
+### 错误类型
+
+#### Deno.errors
+
+**类型：** `object`
+
+提供 Deno 风格错误类型枚举。
+
+| 错误类 | 说明 |
+|--------|------|
+| `Deno.errors.NotFound` | 未找到 |
+| `Deno.errors.PermissionDenied` | 权限拒绝 |
+| `Deno.errors.ConnectionRefused` | 连接被拒绝 |
+| `Deno.errors.ConnectionReset` | 连接重置 |
+| `Deno.errors.ConnectionAborted` | 连接中断 |
+| `Deno.errors.AlreadyExists` | 已存在 |
+| `Deno.errors.BadResource` | 资源错误 |
+| `Deno.errors.BrokenPipe` | 管道断裂 |
+| `Deno.errors.InvalidData` | 数据无效 |
+| `Deno.errors.TimedOut` | 超时 |
+| `Deno.errors.Interrupted` | 中断 |
+| `Deno.errors.WriteZero` | 写入为零 |
+| `Deno.errors.UnexpectedEof` | 意外 EOF |
+| `Deno.errors.Other` | 其他错误 |
+
+```javascript
+try {
+    Deno.readTextFile('/nonexistent');
+} catch (err) {
+    if (err instanceof Deno.errors.NotFound) {
+        console.log('File not found');
+    }
+}
+```
+
+> 注意：这些是简单的 JS 构造函数，并非真正的 Error 子类。
+
+---
+
+### 信号常量
+
+#### Deno.signals
+
+**类型：** `object`
+
+提供 POSIX 信号常量。
+
+```javascript
+console.log(Deno.signals.SIGINT);   // 2
+console.log(Deno.signals.SIGTERM);  // 15
+console.log(Deno.signals.SIGKILL);  // 9
+```
+
+| 常量 | 值 | 说明 |
+|------|-----|------|
+| `SIGHUP` | 1 | 挂起 |
+| `SIGINT` | 2 | 中断 |
+| `SIGQUIT` | 3 | 退出 |
+| `SIGILL` | 4 | 非法指令 |
+| `SIGTRAP` | 5 | 跟踪/断点 |
+| `SIGABRT` | 6 | 中止 |
+| `SIGBUS` | 7 | 总线错误 |
+| `SIGFPE` | 8 | 浮点异常 |
+| `SIGKILL` | 9 | 杀死 |
+| `SIGUSR1` | 10 | 用户信号1 |
+| `SIGSEGV` | 11 | 段错误 |
+| `SIGUSR2` | 12 | 用户信号2 |
+| `SIGPIPE` | 13 | 管道断裂 |
+| `SIGALRM` | 14 | 闹钟 |
+| `SIGTERM` | 15 | 终止 |
+| `SIGSTKFLT` | 16 | 协处理器栈错误 |
+| `SIGCHLD` | 17 | 子进程状态改变 |
+| `SIGCONT` | 19 | 继续 |
+| `SIGSTOP` | 17 | 停止 |
+| `SIGTSTP` | 20 | 终端停止 |
+| `SIGTTIN` | 21 | 后台读终端 |
+| `SIGTTOU` | 22 | 后台写终端 |
+| `SIGURG` | 23 | 紧急数据 |
+| `SIGXCPU` | 24 | CPU 超限 |
+| `SIGXFSZ` | 25 | 文件大小超限 |
+| `SIGVTALRM` | 26 | 虚拟闹钟 |
+| `SIGPROF` | 27 | 性能分析 |
+| `SIGWINCH` | 28 | 窗口大小变化 |
+| `SIGIO` | 29 | I/O 可用 |
+| `SIGPWR` | 30 | 电源故障 |
+| `SIGSYS` | 31 | 非法系统调用 |
 
 ---
 

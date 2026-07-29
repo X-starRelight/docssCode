@@ -74,7 +74,7 @@ export default defineConfig({
         text: '参考',
         collapsed: false,
         items: [
-          { text: 'Node.js 内置库支持状态', link: '/zh/reference/nodejs-stdlib-support' },
+          { text: '标准库支持状态', link: '/zh/reference/stdlib-support' },
           { text: 'koss: 协议模块', link: '/zh/reference/koss-protocol' },
           { text: 'Node.js 兼容层', link: '/zh/reference/node-compat-layer' },
           { text: 'Bun 兼容层', link: '/zh/reference/bun-compat-layer' },
