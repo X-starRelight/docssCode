@@ -2,41 +2,53 @@
 
 ## 空目录
 
-- **打包**：允许打包空目录，生成仅含头部 + 压缩后的空载荷的 `.ttp` 文件
+- **打包**：`collect_files()` 静默跳过空目录，不保留在载荷中
 - **解包**：输出空目录（无文件）
-
-## 无子文件夹的目录
-
-自动降级为扁平模式，即使未指定 `--flat`。
+- **保留空目录**：在 Manifest 中自定义 `empty_dirs` 字段，由应用层处理
 
 ## 文件数量 > 65535
 
-扁平模式下必须启用 ExtInfo（自动检测或 `--ext-info` 强制），使用 uint64 文件数字段。
+无限制。文件数量使用 uint32（最大约 42.9 亿）。
 
-## 单文件 ≥ 4 GiB
+## 单文件 > 4 GiB
 
-扁平模式下必须启用 ExtInfo，使用 ZIP64 式扩展长度字段。
-
-## 超大文件（4 GiB ~ 2^63 - 1）
-
-目录树模式下 offset/size 以 **字符串** 形式存储于 JSON 中，不受 JSON Number 精度限制。
+无限制。文件内容长度使用 uint64。
 
 ## 文件名为空或包含特殊字符
 
-文件名以 UTF-8 字节存储，无额外转义。实现应支持任意 Unicode 字符，但不应包含 `\0`。
+文件名以 UTF-8 字节存储，路径分隔符强制使用 `/`。实现应支持任意 Unicode 字符，但不应包含 `\0`。
 
 ## 中段分卷缺失
 
 扫描分卷时发现断层（如 001、002、004 存在，003 缺失），当前行为是静默停止于缺失处。解包器应警告预期卷数与实际卷数不匹配。
 
-## 自定义数据段缺失（HasCustom=1 但数据不存在或长度不足）
+## 加密相关
 
-解包器应检测到载荷长度不足并报错，避免越界读取。
+| 场景 | 行为 |
+|------|------|
+| `password=None` | 不加密，A区使用压缩+S-Box（b6=0） |
+| `password` 非空 | A区使用 AES-256-GCM 加密（b6=1） |
+| `password` 错误 | AES-GCM 解密失败，抛出异常 |
+| B区无数据 | 文件在 A区结束后终止，无 B区部分 |
+| 分卷加密 | A区长度+加密A区+均在数据体中，按正常分卷规则切割 |
+
+## 路径穿越攻击
+
+解包器必须在写入文件前检测路径穿越：
+
+```python
+# Python
+target_path = os.path.join(output_dir, path.replace('/', os.sep))
+real_target = os.path.realpath(target_path)
+real_output = os.path.realpath(output_dir)
+if not real_target.startswith(real_output + os.sep):
+    raise SecurityError(f"检测到路径穿越攻击: {path}")
+```
 
 ## 压缩流损坏
 
 解压时如果数据损坏，相应的解压函数应抛出异常，解包器捕获后报错退出。
 
-## 目录树模式下 offset/size 字符串格式
+## 非 LZMA 模式下的 LZMA Dict 位
 
-JSON 中的 `"o"` 和 `"s"` 为十进制数字字符串（如 `"21474836480"`），解包时需 `int()` / `parseInt()` 转换为整数。
+当配置字节 b0-b1 不为 `00`（非 LZMA）时，b2-b3 必须为 `00`。解包器在非 LZMA 模式下忽略 b2-b3。
