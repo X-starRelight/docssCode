@@ -27,6 +27,7 @@ Web API（如 `fetch`、`Headers`、`Response`）作为全局对象直接可用�
 | os | `require('koss:os')` | 操作系统信息（arch/platform/cpus/hostname 等） |
 | path | `require('koss:path')` | 路径处理（posix/win32） |
 | process | `require('koss:process')` | 进程信息（process 全局引用） |
+| querystring | `require('koss:querystring')` | 查询字符串 |
 | stream | `require('koss:stream')` | 流操作（Readable/Writable/Transform） |
 | string_decoder | `require('koss:string_decoder')` | 字符串解码器 |
 | system | `require('koss:system')` | 系统与进程（pid/env/cwd/exit/memory） |
@@ -34,7 +35,6 @@ Web API（如 `fetch`、`Headers`、`Response`）作为全局对象直接可用�
 | trace_events | `require('koss:trace_events')` | 追踪事件 |
 | url | `require('koss:url')` | URL 解析与格式化 |
 | util | `require('koss:util')` | 工具函数（format/inspect/promisify/callbackify） |
-| worker | `require('koss:worker')` | 工作线程（stable 不可用） |
 | zlib | `require('koss:zlib')` | 压缩/解压（gzip/deflate/brotli） |
 
 ---

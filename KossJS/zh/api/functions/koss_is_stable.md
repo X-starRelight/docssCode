@@ -17,7 +17,7 @@ bool koss_is_stable(KossInstance* inst);
 
 ## 说明
 
-返回创建实例时设定的 `stable` 参数值。稳定模式下，FFI 和 Worker 功能被禁用。
+返回创建实例时设定的 `stable` 参数值。稳定模式下，FFI 功能被禁用。
 
 详见 [安全与沙箱指南 - 稳定模式](/zh/security-sandbox/security-sandbox#二稳定模式stable)。
 

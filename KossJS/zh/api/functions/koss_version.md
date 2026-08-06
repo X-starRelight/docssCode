@@ -15,7 +15,7 @@ const char* koss_version(void);
 
 ## 说明
 
-返回 KossJS 版本字符串，如 "0.1.0-dev.2"。
+返回 KossJS 版本字符串，如 "0.1.0-dev.10"。
 
 ## 使用示例
 
@@ -27,5 +27,5 @@ printf("KossJS version: %s\n", koss_version());
 from kossjs_interface import KossJS
 
 koss = KossJS()
-print(koss.version())  # 输出: 0.1.0-dev.2
+print(koss.version())  # 输出: 0.1.0-dev.10
 ```

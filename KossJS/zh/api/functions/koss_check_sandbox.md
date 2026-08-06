@@ -34,12 +34,20 @@ typedef bool (*AuditCallback)(
 
 注册审核回调后，所有匹配审核掩码的 API 调用都会触发回调。回调返回 `true` 允许操作，返回 `false` 拒绝操作（抛出 `KossSecurityError`）。
 
-**决策流程**：
+**决策流程**（两级审核链）：
 1. 能力位掩码检查 → 未设置则拒绝（`KossCapabilityError`）
 2. 审核掩码检查 → 未设置则直接放行
-3. 审核回调检查 → 返回 `false` 则拒绝（`KossSecurityError`）
+3. 宿主审核回调检查：
+   - 未注册（`NULL`）→ 拒绝（`KossConfigError`）
+   - 返回 `false` → 拒绝（`KossSecurityError`），**不调用 JS 层**
+   - 返回 `true` → 若已注册 JS 层审核回调，交给其进一步限制
+4. JS 层审核回调（可选，`KossJS.set_audit_callback` 注册）：
+   - 返回 `false` / 抛异常 / 回调重入 → 拒绝（`KossSecurityError`）
+   - 返回 `true` → 放行
 
-详见 [安全与沙箱指南 - 审核回调](/zh/security-sandbox/security-sandbox#四审核回调)。
+> 注意：`Audit Mask ≠ 0` 但宿主回调为 `NULL` 时，即使已注册 JS 层回调也会抛 `KossConfigError`。
+
+详见 [安全与沙箱指南 - 审核回调](/zh/security-sandbox/security-sandbox#四审核回调) 与 [JS 层审核回调](/zh/security-sandbox/security-sandbox#五js-层审核回调两级审核链)。
 
 ## 使用示例
 

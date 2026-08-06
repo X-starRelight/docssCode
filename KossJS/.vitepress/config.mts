@@ -68,6 +68,7 @@ export default defineConfig({
           { text: '版本管理规范', link: '/zh/version/version-overview' },
           { text: '版本变更日志 (dev.5 → dev.8)', link: '/zh/version/changelog-dev.5-to-dev.8' },
           { text: '版本变更日志 (dev.8 → dev.9)', link: '/zh/version/changelog-dev.8-to-dev.9' },
+          { text: '版本变更日志 (dev.9 → dev.10)', link: '/zh/version/changelog-dev.9-to-dev.10' },
         ]
       },
       {
@@ -101,6 +102,7 @@ export default defineConfig({
             collapsed: true,
             items: [
               { text: 'KossJS', link: '/zh/api/globals/kossjs-global' },
+              { text: 'KossJS.set_audit_callback', link: '/zh/api/globals/kossjs-set-audit-callback' },
             ]
           },
           {
@@ -126,6 +128,7 @@ export default defineConfig({
               { text: 'koss_set_audit_mask', link: '/zh/api/functions/koss_set_audit_mask' },
               { text: 'koss_get_audit_mask', link: '/zh/api/functions/koss_get_audit_mask' },
               { text: 'koss_check_sandbox', link: '/zh/api/functions/koss_check_sandbox' },
+              { text: 'koss_clear_js_audit', link: '/zh/api/functions/koss_clear_js_audit' },
               { text: 'koss_enable_audit_debug', link: '/zh/api/functions/koss_enable_audit_debug' },
             ]
           },
@@ -164,15 +167,15 @@ export default defineConfig({
             ]
           },
           {
-            text: 'Worker 线程池',
+            text: '已移除 API',
             collapsed: true,
             items: [
-              { text: 'koss_create_worker_pool', link: '/zh/api/functions/koss_create_worker_pool' },
-              { text: 'koss_worker_post_message', link: '/zh/api/functions/koss_worker_post_message' },
-              { text: 'koss_worker_execute', link: '/zh/api/functions/koss_worker_execute' },
-              { text: 'koss_worker_try_recv', link: '/zh/api/functions/koss_worker_try_recv' },
-              { text: 'koss_worker_terminate', link: '/zh/api/functions/koss_worker_terminate' },
-              { text: 'koss_worker_shutdown', link: '/zh/api/functions/koss_worker_shutdown' },
+              { text: 'koss_create_worker_pool (已移除)', link: '/zh/api/functions/koss_create_worker_pool' },
+              { text: 'koss_worker_post_message (已移除)', link: '/zh/api/functions/koss_worker_post_message' },
+              { text: 'koss_worker_execute (已移除)', link: '/zh/api/functions/koss_worker_execute' },
+              { text: 'koss_worker_try_recv (已移除)', link: '/zh/api/functions/koss_worker_try_recv' },
+              { text: 'koss_worker_terminate (已移除)', link: '/zh/api/functions/koss_worker_terminate' },
+              { text: 'koss_worker_shutdown (已移除)', link: '/zh/api/functions/koss_worker_shutdown' },
             ]
           },
           {

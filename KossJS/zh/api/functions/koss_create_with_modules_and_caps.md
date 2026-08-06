@@ -15,15 +15,15 @@ KossInstance* koss_create_with_modules_and_caps(const char* root_dir, uint32_t c
 |------|------|------|
 | ***root_dir*** | ***const char**** | 模块解析的根目录 |
 | ***caps*** | ***uint32_t*** | 能力位掩码（见 KossCapability） |
-| ***stable*** | ***bool*** | 稳定模式。`true`（默认）禁用 FFI 和 Worker；`false` 启用所有功能 |
+| ***stable*** | ***bool*** | 稳定模式。`true`（默认）禁用 FFI；`false` 启用 FFI |
 
 ## 说明
 
 组合了模块加载、能力位掩码和稳定模式的功能。既启用 ES Module 解析，又支持能力位掩码精确控制沙箱权限。
 
-`stable` 参数控制是否启用 FFI 和 Worker 等不稳定功能：
-- `stable=true`（推荐）：自动剥离 FFI 和 Worker 能力位，生产环境使用
-- `stable=false`：启用所有功能，开发/调试用
+`stable` 参数控制是否启用 FFI 等不稳定功能：
+- `stable=true`（推荐）：自动剥离 FFI 能力位，生产环境使用
+- `stable=false`：启用 FFI，开发/调试用
 
 详见 [安全与沙箱指南](/zh/security-sandbox/security-sandbox)。
 
@@ -57,7 +57,7 @@ koss = KossJS(
     capabilities=KossJS.KOSS_CAP_ALL_NET
 )
 
-# 开发模式（启用 FFI 和 Worker）
+# 开发模式（启用 FFI）
 koss2 = KossJS(
     with_modules=True,
     root_dir="./modules",

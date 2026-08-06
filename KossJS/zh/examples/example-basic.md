@@ -81,25 +81,30 @@ with KossJS(capabilities=KossJS.KOSS_CAP_NET | KossJS.KOSS_CAP_CRYPTO) as koss:
     print(result)
 ```
 
-### 6. Worker 线程池
+### 6. 并行执行（多实例）
+
+> [!NOTE]
+> Worker 线程池自 **v0.1.0-dev.10** 起已移除。需要并行执行任务时，请在宿主侧创建多个实例，或用 `run_async` 处理异步任务。
 
 ```python
 from kossjs_interface import KossJS
 
-koss = KossJS()
+# 并行执行多个独立任务（宿主侧管理）
+def run(code):
+    koss = KossJS()
+    try:
+        return koss.eval(code)
+    finally:
+        koss.destroy()
 
-# 创建 2 个 Worker
-koss.create_worker_pool(2)
-
-# 在 Worker 0 上执行计算
-koss.worker_execute(0, "let s=0; for(let i=0;i<1000;i++) s+=i; s;")
-
-# 获取结果
-msg = koss.worker_try_recv()
-print(f"Worker result: {msg}")
-
-koss.worker_shutdown()
-koss.destroy()
+import concurrent.futures
+with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+    results = pool.map(run, [
+        "let s=0; for(let i=0;i<1000;i++) s+=i; s;",
+        "6 * 7",
+    ])
+    for r in results:
+        print(f"Result: {r}")
 ```
 
 ### 7. 注册原生类

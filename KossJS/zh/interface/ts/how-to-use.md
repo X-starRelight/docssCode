@@ -33,8 +33,7 @@ pm install koffi
   - 全局变量注入
   - 注册原生函数
   - Fetch API 调用
-  - 沙箱安全（审核掩码、审核回调、调试模式）
-  - Worker 线程池
+  - 沙箱安全（审核掩码、审核回调、调试模式、JS 层审核回调）
 
 ---
 
@@ -47,7 +46,7 @@ const koss = new KossJS(
     libPath?: string,       // 动态库路径，默认自动检测
     withModules?: boolean,  // 是否启用模块加载，默认 false
     rootDir?: string,       // 模块解析根目录，默认当前目录
-    capabilities?: number,  // 能力位掩码，默认 KOSS_CAP_ALL
+    capabilities?: number,  // 能力位掩码，默认 KOSS_CAP_SANDBOX
     stable?: boolean        // 稳定模式，默认 true
 );
 `
@@ -57,13 +56,13 @@ const koss = new KossJS(
 `	ypescript
 import { KossJS } from './kossjs_interface';
 
-// 默认创建（stable=true，生产模式）
+// 默认创建（stable=true，纯计算沙箱）
 const koss = new KossJS();
 
-// 沙箱模式
-const sandbox = new KossJS(undefined, false, undefined, KossJS.KOSS_CAP_SANDBOX);
+// 完全启用
+const full = new KossJS(undefined, false, undefined, KossJS.KOSS_CAP_ALL);
 
-// 开发模式（启用 FFI 和 Worker）
+// 开发模式（启用 FFI）
 const dev = new KossJS(undefined, false, undefined, KossJS.KOSS_CAP_ALL, false);
 `
 
@@ -204,40 +203,22 @@ koss.enableAuditDebug(true);   // 开启
 koss.enableAuditDebug(false);  // 关闭
 `
 
-### 2.7 Worker 线程池
+### 2.7 JS 层审核回调
 
-#### ***createWorkerPool(size: number): string***
+#### ***clearJsAudit(): string***
 
-创建指定大小的 Worker 线程池（最大 64）。
-
-#### ***workerExecute(workerId: number, code: string): string***
-
-在指定 Worker 上执行 JavaScript 代码。
-
-#### ***workerPostMessage(workerId: number, data: string): string***
-
-向指定 Worker 发送 JSON 消息。
-
-#### ***workerTryRecv(): string | null***
-
-非阻塞收取 Worker 消息/执行结果。
-
-#### ***workerTerminate(workerId: number): string***
-
-终止指定 Worker 线程。
-
-#### ***workerShutdown(): string***
-
-关闭全部 Worker 线程池。
+清除 JS 层审核回调（由 JS 侧 `KossJS.set_audit_callback` 注册）。清除后，掩码覆盖的操作由宿主审核回调单独决策。
 
 `	ypescript
-const koss = new KossJS(undefined, false, undefined, KossJS.KOSS_CAP_ALL, false);
-koss.createWorkerPool(2);
-koss.workerExecute(0, "1 + 1");
-const msg = koss.workerTryRecv();
-console.log(msg);
-koss.workerShutdown();
+// JS 侧注册审核回调（拒绝所有 fs 操作）
+koss.eval(`KossJS.set_audit_callback(function(t, a, p) { return false; })`);
+
+// 宿主清除 JS 层审核回调
+koss.clearJsAudit();
 `
+
+> [!NOTE]
+> Worker 线程池相关方法（`createWorkerPool`、`workerExecute` 等）自 **v0.1.0-dev.10** 起已从 TypeScript 接口移除。
 
 ### 2.8 资源管理
 
@@ -256,7 +237,7 @@ koss.destroy();
 获取 KossJS 版本。
 
 `	ypescript
-console.log(koss.version());  // 输出: 0.1.0-dev.8
+console.log(koss.version());  // 输出: 0.1.0-dev.10
 `
 
 ---
@@ -377,7 +358,6 @@ KossJS.KOSS_CAP_ALL        = 0xFFFFFFFF;
 KossJS.KOSS_CAP_FS              = KossJS.KOSS_CAP_ALL_FS;
 KossJS.KOSS_CAP_NET             = KossJS.KOSS_CAP_ALL_NET;
 KossJS.KOSS_CAP_CRYPTO          = KossJS.KOSS_CAP_ALL_CRYPTO;
-KossJS.KOSS_CAP_WORKER          = 1 << 3;
 KossJS.KOSS_CAP_EXTERNAL_LOADER = KossJS.MODULE_LOAD;
 `
 
@@ -389,7 +369,7 @@ KossJS.KOSS_CAP_EXTERNAL_LOADER = KossJS.MODULE_LOAD;
 2. **动态库路径**：若自动检测失败，需显式传入正确路径
 3. **异常处理**：JavaScript 错误会抛出 ***JsError*** 异常
 4. **稳定模式**：生产环境使用默认 ***stable=true***，开发/调试使用 ***stable=false***
-5. **Worker 隔离**：Worker 功能在 ***stable=true*** 时被禁用
+5. **默认能力**：默认构造器为 `KOSS_CAP_SANDBOX`（纯计算沙箱），需要系统能力时显式传 `KOSS_CAP_ALL`
 
 ---
 

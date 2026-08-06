@@ -1,69 +1,30 @@
-# koss_worker_try_recv 函数
+# koss_worker_try_recv 函数（已移除）
 
-**功能描述**：非阻塞地尝试从任意 Worker 收取消息或执行结果。  
-**返回值**：***KossResult*** 结构体。无消息时 `value` 为 `"null"`。
+> [!IMPORTANT]
+> **此 API 已在 v0.1.0-dev.10 移除。**
 
-> [!WARNING]
-> Worker 在 `stable=True`（默认）时被禁用。如需在生产环境中使用并行执行功能，请查看 [stable 模式替代方案](/zh/reference/stable-alternatives)。
+## 移除说明
 
-## 函数签名
+Worker 线程池自 **v0.1.0-dev.10** 起被整体移除：
 
-```c
-KossResult koss_worker_try_recv(KossInstance* inst);
-```
+- 删除 `src/worker.rs`、`src/js_shims/koss_shim/worker.js`
+- 清理 `__koss_worker_*` 等 C ABI 函数及 Python/TypeScript 绑定
+- 移除 `KOSS_CAP_WORKER` 能力位与 `koss:worker` 模块
 
-## 参数
+该函数不再存在于动态库符号表中，调用会失败。
 
-| 参数 | 类型 | 说明 |
-|------|------|------|
-| ***inst*** | ***KossInstance**** | JS 实例指针 |
+## 替代方案
 
-## 返回值格式
+需要并行执行 JS 任务时，请使用：
 
-成功时返回 JSON，包含以下格式之一：
+| 场景 | 方案 |
+|------|------|
+| 并行执行多个独立任务 | **多实例隔离**：宿主侧创建多个 KossJS 实例 |
+| 异步 I/O（网络/文件） | **`koss_run_async`**：单实例内 async/await |
+| CPU 密集并行 | **宿主线程池 + 多实例** |
 
-**执行结果**：
-```json
-{"type":"result","workerId":0,"id":1,"success":true,"value":"4950"}
-```
+详见 [stable 模式替代方案 - 并行执行](/zh/reference/stable-alternatives#二并行执行替代方案) 与 [版本变更日志 (dev.9 → dev.10)](/zh/version/changelog-dev.9-to-dev.10)。
 
-**消息**：
-```json
-{"type":"message","workerId":0,"data":"{\"msg\":\"hello\"}"}
-```
+## 相关 API
 
-**错误**：
-```json
-{"type":"error","workerId":0,"message":"error description"}
-```
-
-## 使用示例
-
-### C
-
-```c
-KossInstance* inst = koss_create();
-koss_create_worker_pool(inst, 2);
-koss_worker_execute(inst, 0, "42");
-
-KossResult msg = koss_worker_try_recv(inst);
-if (msg.code == 0 && strcmp(msg.value, "null") != 0) {
-    printf("Received: %s\n", msg.value);
-}
-koss_free_result(msg);
-koss_destroy(inst);
-```
-
-### Python
-
-```python
-from kossjs_interface import KossJS
-
-koss = KossJS()
-koss.create_worker_pool(2)
-koss.worker_execute(0, "42")
-
-msg = koss.worker_try_recv()
-if msg:
-    print(f"Received: {msg}")
-```
+- [koss_run_async](/zh/api/functions/koss_run_async)

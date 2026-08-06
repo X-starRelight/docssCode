@@ -1,61 +1,31 @@
-# koss_worker_execute 函数
+# koss_worker_execute 函数（已移除）
 
-**功能描述**：在指定 Worker 线程上执行 JavaScript 代码。  
-**返回值**：***KossResult*** 结构体，包含命令 ID（JSON 格式：`{"commandId": id}`）。
+> [!IMPORTANT]
+> **此 API 已在 v0.1.0-dev.10 移除。**
 
-> [!WARNING]
-> Worker 在 `stable=True`（默认）时被禁用。如需在生产环境中使用并行执行功能，请查看 [stable 模式替代方案](/zh/reference/stable-alternatives)。
+## 移除说明
 
-## 函数签名
+Worker 线程池自 **v0.1.0-dev.10** 起被整体移除：
 
-```c
-KossResult koss_worker_execute(KossInstance* inst, int32_t worker_id, const char* code);
-```
+- 删除 `src/worker.rs`、`src/js_shims/koss_shim/worker.js`
+- 清理 `__koss_worker_*` 等 C ABI 函数及 Python/TypeScript 绑定
+- 移除 `KOSS_CAP_WORKER` 能力位与 `koss:worker` 模块
 
-## 参数
+该函数不再存在于动态库符号表中，调用会失败。
 
-| 参数 | 类型 | 说明 |
-|------|------|------|
-| ***inst*** | ***KossInstance**** | JS 实例指针 |
-| ***worker_id*** | ***int32_t*** | Worker ID（从 0 开始） |
-| ***code*** | ***const char**** | JavaScript 代码字符串 |
+## 替代方案
 
-## 说明
+需要并行执行 JS 任务时，请使用：
 
-向 Worker 提交一段代码执行。Worker 在独立的线程和 Boa Context 中执行。执行结果通过 `koss_worker_try_recv` 获取。
+| 场景 | 方案 |
+|------|------|
+| 并行执行多个独立任务 | **多实例隔离**：宿主侧创建多个 KossJS 实例 |
+| 异步 I/O（网络/文件） | **`koss_run_async`**：单实例内 async/await |
+| CPU 密集并行 | **宿主线程池 + 多实例** |
 
-## 使用示例
+详见 [stable 模式替代方案 - 并行执行](/zh/reference/stable-alternatives#二并行执行替代方案) 与 [版本变更日志 (dev.9 → dev.10)](/zh/version/changelog-dev.9-to-dev.10)。
 
-### C
+## 相关 API
 
-```c
-KossInstance* inst = koss_create();
-koss_create_worker_pool(inst, 2);
-
-// 提交执行任务
-koss_worker_execute(inst, 0, "let sum = 0; for(let i=0;i<1000;i++) sum += i; sum;");
-
-// 稍后获取结果
-KossResult msg = koss_worker_try_recv(inst);
-if (msg.value) {
-    printf("Worker result: %s\n", msg.value);
-    koss_free_result(msg);
-}
-
-koss_destroy(inst);
-```
-
-### Python
-
-```python
-from kossjs_interface import KossJS
-
-koss = KossJS()
-koss.create_worker_pool(2)
-
-koss.worker_execute(0, "let sum=0; for(let i=0;i<1000;i++) sum+=i; sum;")
-
-msg = koss.worker_try_recv()
-if msg:
-    print(f"Worker result: {msg}")
-```
+- [koss_run_async](/zh/api/functions/koss_run_async)
+- [koss_run_string](/zh/api/functions/koss_run_string)

@@ -1,6 +1,6 @@
 # koss_create 函数
 
-**功能描述**：创建一个新的 JavaScript 实例（全部能力，stable=true）。  
+**功能描述**：创建一个新的 JavaScript 实例（默认能力 `KOSS_CAP_SANDBOX`，stable=true）。  
 **返回值**：成功返回实例指针，失败返回 NULL。
 
 ## 函数签名
@@ -17,11 +17,13 @@ static inline KossInstance* koss_create(void);
 
 创建一个新的完全隔离的 JavaScript 虚拟机实例。该实例拥有自己的全局环境，不与其他实例共享。
 
-此函数是 `koss_create_with_caps(KOSS_CAP_ALL, true)` 的便捷封装，等价于：
-- 启用所有 28 个能力位
-- 启用稳定模式（禁用 FFI 和 Worker）
+> **v0.1.0-dev.10 行为变更**：默认能力由 `KOSS_CAP_ALL` 改为 `KOSS_CAP_SANDBOX`（纯计算沙箱），不再自动授予文件系统/网络等系统能力。
 
-如需精确控制能力位或启用 FFI/Worker，请使用 [koss_create_with_caps](/zh/api/functions/koss_create_with_caps)。
+此函数等价于 `koss_create_with_builtins(KOSS_CAP_SANDBOX, KOSS_BUILTIN_ALL, true)`：
+- 能力位：`KOSS_CAP_SANDBOX`（0，无任何系统能力）
+- 启用稳定模式（禁用 FFI）
+
+如需授予能力，请使用 [koss_create_with_caps](/zh/api/functions/koss_create_with_caps) 显式传入 `KOSS_CAP_ALL`（或所需能力位）。
 
 ## 向后兼容性
 
@@ -52,7 +54,7 @@ koss_destroy(inst);
 ```python
 from kossjs_interface import KossJS
 
-koss = KossJS()  # 等价于 KossJS(stable=True)
+koss = KossJS()  # 等价于 KossJS(capabilities=KossJS.KOSS_CAP_SANDBOX, stable=True)
 print(koss.is_stable)  # True
 koss.destroy()
 ```

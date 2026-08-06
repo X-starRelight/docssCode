@@ -26,7 +26,7 @@ KossInstance* koss_create_with_modules_and_builtins(
 |------|------|------|
 | ***capabilities*** | ***uint32_t*** | 能力位掩码（见 KossCapability），控制底层操作权限 |
 | ***builtins*** | ***uint32_t*** | Builtin 标志位掩码，控制内置模块可见性 |
-| ***stable*** | ***bool*** | 稳定模式。`true` 禁用 FFI 和 Worker；`false` 启用所有功能 |
+| ***stable*** | ***bool*** | 稳定模式。`true` 禁用 FFI；`false` 启用 FFI |
 | ***root_dir*** | ***const char**** | 模块根目录路径（仅 `koss_create_with_modules_and_builtins`） |
 
 ## Builtin 标志位定义
@@ -46,10 +46,10 @@ typedef enum {
 
 | 标志位 | 值 | 控制模块 | 说明 |
 |--------|-----|----------|------|
-| `KOSS_BUILTIN_NODE` | `1 << 0` | `koss:node/*` | 24 个 Node.js 兼容模块 |
+| `KOSS_BUILTIN_NODE` | `1 << 0` | `koss:node/*` | 25 个 Node.js 兼容模块 |
 | `KOSS_BUILTIN_BUN` | `1 << 1` | `koss:bun` | Bun v1.1.x 兼容层 |
 | `KOSS_BUILTIN_DENO` | `1 << 2` | `koss:deno` | Deno v2.0.x 兼容层 |
-| `KOSS_BUILTIN_KOSS` | `1 << 3` | `koss:io/crypto/system/data/ffi/worker` | Koss 原生模块 |
+| `KOSS_BUILTIN_KOSS` | `1 << 3` | `koss:io/crypto/system/data/ffi` 等 | Koss 原生模块（23 个 koss 标准库模块） |
 
 ### 组合标志位
 
@@ -81,7 +81,7 @@ uint32_t builtins = KOSS_BUILTIN_ALL;
 
 - **Capability**：控制 L1 Rust 绑定的访问权限（如文件读写、网络请求）
 - **Builtin**：控制 L3 JS 兼容模块的可见性（如 Node/Bun/Deno 模块）
-- **Stable**：控制 FFI/Worker 等不稳定功能的启用
+- **Stable**：控制 FFI 等不稳定功能的启用
 
 `koss_create_with_modules_and_builtins` 在 `koss_create_with_builtins` 的基础上增加了外部模块加载支持，可通过 `root_dir` 指定模块查找路径。
 
@@ -89,12 +89,13 @@ uint32_t builtins = KOSS_BUILTIN_ALL;
 
 ```c
 // 旧 API 内部调用新 API，默认 builtins = KOSS_BUILTIN_ALL
+// 注意（v0.1.0-dev.10）：默认能力为 KOSS_CAP_SANDBOX
 static inline KossInstance* koss_create(void) {
-    return koss_create_with_builtins(KOSS_CAP_ALL, KOSS_BUILTIN_ALL, true);
+    return koss_create_with_builtins(KOSS_CAP_SANDBOX, KOSS_BUILTIN_ALL, true);
 }
 
 static inline KossInstance* koss_create_with_modules(const char* root_dir) {
-    return koss_create_with_modules_and_builtins(root_dir, KOSS_CAP_ALL, KOSS_BUILTIN_ALL, true);
+    return koss_create_with_modules_and_builtins(root_dir, KOSS_CAP_SANDBOX, KOSS_BUILTIN_ALL, true);
 }
 ```
 

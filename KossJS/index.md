@@ -26,7 +26,7 @@ features:
   - title: "🖥️ 6 大平台覆盖"
     details: "Windows、Linux、macOS、Android、HarmonyOS、iOS 全平台动态库编译"
   - title: "⚡ 极致性能"
-    details: "Rust 实现，极短 GC 停顿、极低内存占用、原生并发支持"
+    details: "Rust 实现，极短 GC 停顿、极低内存占用、异步事件循环"
   - title: "🌐 内置 Fetch API"
     details: "原生支持 HTTP/HTTPS 下载，带 TLS 指纹伪装"
   - title: "📦 Node.js 兼容"

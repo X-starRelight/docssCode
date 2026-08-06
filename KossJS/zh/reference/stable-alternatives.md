@@ -1,6 +1,9 @@
 # stable 模式不可用 API 的替代方案
 
-> 当 `stable=True`（默认）时，FFI 和 Worker 功能被禁用。本文档提供这些场景的替代实现方案，附 Python 代码示例。
+> 当 `stable=True`（默认）时，FFI 功能被禁用。本文档提供这些场景的替代实现方案，附 Python 代码示例。
+>
+> > [!NOTE]
+> > Worker 线程池自 **v0.1.0-dev.10** 起已整体移除（不再是"stable 下禁用"，而是不存在）。需要并行执行任务时，请参考本文档「并行执行替代方案」一节。
 
 ---
 
@@ -9,7 +12,6 @@
 | 功能 | 禁用原因 | 涉及 API |
 |------|---------|---------|
 | FFI | 无法在所有场景下充分测试 | `_senri_ffi.open/func/alloc/callback/struct` |
-| Worker | 未传播沙箱设置（能力位、审核回调） | `worker_threads`, `__koss_create_worker_pool` |
 
 ---
 
@@ -97,7 +99,9 @@ print(result)  # connected
 
 ---
 
-## 二、Worker 替代方案
+## 二、并行执行替代方案
+
+> Worker 线程池已移除，需要并行执行 JS 任务时可采用以下方案。
 
 ### 方案 1：多实例隔离（推荐）
 

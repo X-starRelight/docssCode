@@ -176,11 +176,11 @@ stable 参数控制实例的生产就绪模式：
 `python
 from kossjs_interface import KossJS
 
-# 生产模式（默认，禁用 FFI 和 Worker）
+# 生产模式（默认，禁用 FFI）
 koss = KossJS()
 print(koss.is_stable)  # True
 
-# 开发模式（启用所有功能）
+# 开发模式（启用 FFI）
 koss_dev = KossJS(stable=False)
 print(koss_dev.is_stable)  # False
 `
@@ -188,7 +188,7 @@ print(koss_dev.is_stable)  # False
 详见 [安全与沙箱指南](/zh/security-sandbox/security-sandbox)。
 
 > [!TIP]
-> stable 模式下 FFI 和 Worker 被禁用？查看 [stable 模式替代方案](/zh/reference/stable-alternatives) 了解如何在生产环境中实现相同功能。
+> stable 模式下 FFI 被禁用？查看 [stable 模式替代方案](/zh/reference/stable-alternatives) 了解如何在生产环境中实现相同功能。
 
 ### 高性能
 - **Rust 实现**：极低的内存占用

@@ -1,49 +1,31 @@
-# koss_create_worker_pool 函数
+# koss_create_worker_pool 函数（已移除）
 
-**功能描述**：创建指定大小的 Worker 线程池。  
-**返回值**：***KossResult*** 结构体。
+> [!IMPORTANT]
+> **此 API 已在 v0.1.0-dev.10 移除。**
 
-> [!WARNING]
-> Worker 在 `stable=True`（默认）时被禁用。如需在生产环境中使用并行执行功能，请查看 [stable 模式替代方案](/zh/reference/stable-alternatives)。
+## 移除说明
 
-## 函数签名
+Worker 线程池自 **v0.1.0-dev.10** 起被整体移除：
 
-```c
-KossResult koss_create_worker_pool(KossInstance* inst, int32_t size);
-```
+- 删除 `src/worker.rs`、`src/js_shims/koss_shim/worker.js`
+- 清理 `__koss_create_worker_pool`、`__koss_worker_*` 等 C ABI 函数及 Python/TypeScript 绑定
+- 移除 `KOSS_CAP_WORKER` 能力位与 `koss:worker` 模块
 
-## 参数
+该函数不再存在于动态库符号表中，调用会失败。
 
-| 参数 | 类型 | 说明 |
-|------|------|------|
-| ***inst*** | ***KossInstance**** | JS 实例指针 |
-| ***size*** | ***int32_t*** | Worker 数量（1 ~ 64） |
+## 替代方案
 
-## 说明
+需要并行执行 JS 任务时，请使用：
 
-每个 Worker 运行在独立的 OS 线程上，拥有独立的 Boa Context。Worker 之间通过消息传递通信。最大支持 64 个 Worker。
+| 场景 | 方案 |
+|------|------|
+| 并行执行多个独立任务 | **多实例隔离**：宿主侧创建多个 KossJS 实例 |
+| 异步 I/O（网络/文件） | **`koss_run_async`**：单实例内 async/await |
+| CPU 密集并行 | **宿主线程池 + 多实例** |
 
-## 使用示例
+详见 [stable 模式替代方案 - 并行执行](/zh/reference/stable-alternatives#二并行执行替代方案) 与 [版本变更日志 (dev.9 → dev.10)](/zh/version/changelog-dev.9-to-dev.10)。
 
-### C
+## 相关 API
 
-```c
-KossInstance* inst = koss_create();
-koss_create_worker_pool(inst, 4);  // 创建 4 个 Worker
-
-// 在 Worker 上执行代码
-koss_worker_execute(inst, 0, "1 + 1");
-
-koss_destroy(inst);
-```
-
-### Python
-
-```python
-from kossjs_interface import KossJS
-
-koss = KossJS()
-koss.create_worker_pool(4)
-
-koss.worker_execute(0, "1 + 1")
-```
+- [koss_create](/zh/api/functions/koss_create)
+- [koss_create_with_caps](/zh/api/functions/koss_create_with_caps)

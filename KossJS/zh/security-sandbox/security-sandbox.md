@@ -1,12 +1,12 @@
 # 安全与沙箱指南
 
-KossJS 默认行为与 Node.js 一致：**信任运行在其中的 JS 代码**，赋予其完整的文件系统、网络和加密能力。对于运行可信代码的场景，这是合理的设计。
+KossJS 从 **v0.1.0-dev.10** 起，默认构造器（`koss_create()` / `koss_create_with_modules()`）不再授予任何系统能力，而是 **`KOSS_CAP_SANDBOX`（纯计算沙箱）**。需要文件系统、网络等能力的宿主必须显式传入 `KOSS_CAP_ALL`（或所需能力位）。
 
-然而，当 KossJS 被嵌入到**运行不可信 JS 代码**的应用中时（如第三方插件引擎、用户脚本沙箱），这些能力成为安全风险。KossJS 提供了三层安全机制：
+当 KossJS 被嵌入到**运行不可信 JS 代码**的应用中时（如第三方插件引擎、用户脚本沙箱），KossJS 提供了三层安全机制：
 
 1. **能力位掩码**（Capability Bitmask）— 静态权限声明，实例创建时确定
 2. **审核掩码**（Audit Mask）— 动态审核策略，运行时可更改
-3. **审核回调**（Audit Callback）— 运行时动态决策，允许宿主根据上下文判断
+3. **审核回调**（Audit Callback）— 运行时动态决策，允许宿主根据上下文判断（宿主回调 + 可选的 JS 层回调）
 
 ---
 
@@ -71,7 +71,6 @@ KossJS 默认行为与 Node.js 一致：**信任运行在其中的 JS 代码**�
 #define KOSS_CAP_FS              KOSS_CAP_ALL_FS
 #define KOSS_CAP_NET             KOSS_CAP_ALL_NET
 #define KOSS_CAP_CRYPTO          KOSS_CAP_ALL_CRYPTO
-#define KOSS_CAP_WORKER          (1u << 3)
 #define KOSS_CAP_EXTERNAL_LOADER MODULE_LOAD
 ```
 
@@ -97,7 +96,7 @@ KossInstance *k3 = koss_create_with_caps(KOSS_CAP_ALL_FS | KOSS_CAP_ALL_NET, tru
 // 模块 + 能力组合
 KossInstance *k4 = koss_create_with_modules_and_caps(".", KOSS_CAP_ALL_FS | KOSS_CAP_ALL_NET, true);
 
-// 开发模式（启用 FFI 和 Worker）
+// 开发模式（启用 FFI）
 KossInstance *k5 = koss_create_with_caps(KOSS_CAP_ALL, false);
 ```
 
@@ -106,17 +105,17 @@ KossInstance *k5 = koss_create_with_caps(KOSS_CAP_ALL, false);
 ```python
 from kossjs_interface import KossJS
 
-# 沙箱模式（纯计算）
-koss = KossJS(capabilities=KossJS.KOSS_CAP_SANDBOX)
+# 沙箱模式（纯计算，默认）
+koss = KossJS()  # 等价于 capabilities=KossJS.KOSS_CAP_SANDBOX, stable=True
 
 # 部分启用
 koss2 = KossJS(capabilities=KossJS.KOSS_CAP_ALL_NET | KossJS.KOSS_CAP_ALL_CRYPTO)
 
-# 完全启用（默认，stable=True）
-koss3 = KossJS()  # 等价于 capabilities=KossJS.KOSS_CAP_ALL, stable=True
+# 完全启用
+koss3 = KossJS(capabilities=KossJS.KOSS_CAP_ALL)  # 需显式传入 KOSS_CAP_ALL
 
-# 开发模式（启用 FFI 和 Worker）
-koss4 = KossJS(stable=False)
+# 开发模式（启用 FFI）
+koss4 = KossJS(capabilities=KossJS.KOSS_CAP_ALL, stable=False)
 
 # 搭配模块加载
 koss5 = KossJS(with_modules=True, root_dir="./modules",
@@ -162,25 +161,25 @@ const r = await fetch("https://example.com");  // → TypeError: fetch is not a 
 
 | 值 | 行为 |
 |----|------|
-| `true`（默认） | 禁用 FFI 和 Worker 功能，生产环境推荐 |
-| `false` | 启用所有功能，开发/调试用 |
+| `true`（默认） | 禁用 FFI 功能，生产环境推荐 |
+| `false` | 启用 FFI，开发/调试用 |
 
 ### 2.2 stable=True 时被禁用的功能
 
 | 功能 | 禁用原因 |
 |------|---------|
 | FFI（`_senri_ffi`） | 无法在所有场景下充分测试 |
-| Worker（`worker_threads`） | Worker 实现未传播沙箱设置（能力位、审核回调） |
+
+> [!NOTE]
+> Worker 线程池自 **v0.1.0-dev.10** 起已整体移除，不再受 stable 模式控制。
 
 > [!TIP]
-> 如需在 stable 模式下实现 FFI 或 Worker 的功能，请参考 [stable 模式替代方案](/zh/reference/stable-alternatives)。
+> 如需在 stable 模式下实现 FFI 的功能，请参考 [stable 模式替代方案](/zh/reference/stable-alternatives)。
 
 ### 2.3 stable=True 时的行为
 
 - 如果 caps 包含 FFI 位，这些位会被自动剥离
-- 如果 caps 包含 Worker 位，该位会被自动剥离
-- `_senri_ffi` 和 `__koss_create_worker_pool` 等函数会注册为 stub，调用时抛出明确错误
-- `require('worker_threads')` 会被模块加载器拦截
+- `_senri_ffi` 会注册为 stub，调用时抛出明确错误
 
 ### 2.4 使用示例
 
@@ -192,7 +191,7 @@ koss = KossJS()  # stable=True
 print(koss.is_stable)  # True
 
 # 开发模式
-koss_dev = KossJS(stable=False)  # 启用 FFI 和 Worker
+koss_dev = KossJS(stable=False)  # 启用 FFI
 print(koss_dev.is_stable)  # False
 ```
 
@@ -241,26 +240,44 @@ JS 调用受保护 API（例如 fs.readFile）
 │ 审核掩码检查                      │
 └─────────────────────────────────┘
     │
-    ├── 未设置 → 直接放行
+    ├── 未设置 → 直接放行（不触发审核）
     │
     ▼ 已设置
 ┌─────────────────────────────────┐
-│ 是否存在外部审核回调？            │
+│ 宿主审核回调是否注册？            │
 └─────────────────────────────────┘
     │
-    ├── 无 → 放行
+    ├── 否（NULL）→ 直接拒绝（KossConfigError: Audit mask is set but no callback is registered）
     │
-    ▼ 有
+    ▼ 是
 ┌─────────────────────────────────┐
-│ 调用外部审核回调                  │
+│ 调用宿主审核回调                  │
 └─────────────────────────────────┘
     │
-    ├── 返回 false / 异常 → 拒绝（KossSecurityError）
+    ├── 返回 false → 拒绝（KossSecurityError）【不调用 JS 层】
+    │
+    ▼ 返回 true
+┌─────────────────────────────────┐
+│ JS 层审核回调是否注册？           │
+│ （KossJS.set_audit_callback）    │
+└─────────────────────────────────┘
+    │
+    ├── 否 → 放行
+    │
+    ▼ 是
+┌─────────────────────────────────┐
+│ 调用 JS 层审核回调                │
+│  (target, args[], pwd) => bool   │
+└─────────────────────────────────┘
+    │
+    ├── 返回 false / 抛异常 / 重入 → 拒绝（KossSecurityError）
     ├── 返回 true → 放行
     │
     ▼
     放行，执行实际 API 调用
 ```
+
+> **两级审核链**：宿主回调是主闸门；JS 层回调（可选）在其放行后进行**进一步限制**。JS 层回调只能拒绝（返回 `false`），不能放行宿主已拒绝的操作，也不能绕过能力位。
 
 ### 3.3 使用示例
 
@@ -339,11 +356,72 @@ koss.check_sandbox(None)
 | 错误 | 原因 |
 |------|------|
 | `KossCapabilityError` | 能力位掩码禁止该操作 |
-| `KossSecurityError` | 审核回调返回 `false` |
+| `KossSecurityError` | 宿主或 JS 层审核回调返回 `false` |
+| `KossConfigError` | 审核掩码 ≠ 0 但未注册审核回调（安全策略配置不完整） |
 
 ---
 
-## 五、审核调试模式
+## 五、JS 层审核回调（两级审核链）
+
+**v0.1.0-dev.10 新增。** 除宿主（C/Python/TS）审核回调外，JS 代码也可注册一个**策略函数**，在宿主审核放行后做进一步限制。
+
+### 5.1 注册与清除
+
+```javascript
+// 注册 JS 层审核回调
+KossJS.set_audit_callback(function (target, args, pwd) {
+    // target: 操作名（如 'fs'、'net.tcpConnect'）
+    // args:   参数字符串数组
+    // pwd:    当前模块目录（eval 时为 null）
+    return true;   // 放行
+});
+
+// 清除 JS 层审核回调（JS 侧）
+KossJS.set_audit_callback(null);
+
+// 清除 JS 层审核回调（宿主侧，C ABI）
+koss_clear_js_audit(inst);
+```
+
+> 完整参数、返回值与行为说明，见 **[KossJS.set_audit_callback 函数参考](/zh/api/globals/kossjs-set-audit-callback)**。
+
+### 5.2 安全语义
+
+- **主闸门是宿主回调**：宿主返回 `false` → 直接拒绝，JS 层**不会被调用**
+- **JS 层只能进一步收紧**：返回 `false` / 抛异常 / 回调重入 → 拒绝；无法放行宿主已拒绝的操作，也无法绕过能力位
+- **宿主回调为 `NULL` 时**：即使已注册 JS 层回调，掩码覆盖的操作仍抛 `KossConfigError`
+- **重入保护**：JS 回调执行期间再次触发审核（如在回调内调用受保护 API）直接拒绝，防止死循环
+
+### 5.3 示例
+
+```javascript
+// 仅允许读取 /tmp/sandbox/ 目录下的文件
+KossJS.set_audit_callback(function (target, args, pwd) {
+    if (target === 'fs.readFile') {
+        return args[0].startsWith('/tmp/sandbox/');
+    }
+    return true;
+});
+```
+
+```python
+from kossjs_interface import KossJS
+
+koss = KossJS(capabilities=KossJS.KOSS_CAP_ALL_FS)
+koss.set_audit_mask(KossJS.FS_READ)
+
+# 宿主回调放行后，交给 JS 策略进一步限制
+koss.check_sandbox(lambda target, args, pwd: True)
+koss.eval("""
+KossJS.set_audit_callback(function (target, args, pwd) {
+    return args[0] === './allowed.txt';
+});
+""")
+```
+
+---
+
+## 六、审核调试模式
 
 调试模式开启后，错误消息包含详细的拒绝原因、超时信息和回调失败详情。
 
@@ -372,7 +450,7 @@ KossSecurityError: sandbox audit denied for fs.readFile (path: /etc/passwd)
 
 ---
 
-## 六、不受能力控制的操作
+## 七、不受能力控制的操作
 
 以下 API 由宿主主动调用，属于宿主权限范围：
 
@@ -385,7 +463,7 @@ KossSecurityError: sandbox audit denied for fs.readFile (path: /etc/passwd)
 
 ---
 
-## 七、Python 常量参考
+## 八、Python 常量参考
 
 ```python
 # 文件系统（6 个细粒度操作）
@@ -438,25 +516,24 @@ KossJS.KOSS_CAP_ALL        = 0xFFFFFFFF
 KossJS.KOSS_CAP_FS              = KossJS.KOSS_CAP_ALL_FS
 KossJS.KOSS_CAP_NET             = KossJS.KOSS_CAP_ALL_NET
 KossJS.KOSS_CAP_CRYPTO          = KossJS.KOSS_CAP_ALL_CRYPTO
-KossJS.KOSS_CAP_WORKER          = 1 << 3
 KossJS.KOSS_CAP_EXTERNAL_LOADER = KossJS.MODULE_LOAD
 ```
 
 ---
 
-## 八、安全建议
+## 九、安全建议
 
 1. **运行不可信代码时始终使用最小权限原则**：仅启用必要的能力
-2. **生产环境使用 `stable=True`**：禁用 FFI 和 Worker 等不稳定功能
+2. **生产环境使用 `stable=True`**：禁用 FFI 等不稳定功能
 3. **不要暴露敏感原生函数**：`koss_register_function` 注入的函数不受能力控制
 4. **设置合理的 timeout**：`koss_run_async` 的超时参数可防止无限执行
-5. **限制 Worker 数量**：`koss_create_worker_pool` 最大 64 个
-6. **查询当前能力**：用 `koss_get_capabilities` 验证实例权限状态
-7. **生产环境关闭调试模式**：`koss_enable_audit_debug(inst, false)` 避免信息泄露
+5. **查询当前能力**：用 `koss_get_capabilities` 验证实例权限状态
+6. **生产环境关闭调试模式**：`koss_enable_audit_debug(inst, false)` 避免信息泄露
+7. **保持审核配置完整**：审核掩码 ≠ 0 时必须注册宿主审核回调，否则掩码覆盖的操作会抛 `KossConfigError`
 
 ---
 
-## 九、相关 API
+## 十、相关 API
 
 - [koss_create_with_caps](/zh/api/functions/koss_create_with_caps)
 - [koss_create_with_modules_and_caps](/zh/api/functions/koss_create_with_modules_and_caps)
@@ -465,4 +542,5 @@ KossJS.KOSS_CAP_EXTERNAL_LOADER = KossJS.MODULE_LOAD
 - [koss_set_audit_mask](/zh/api/functions/koss_set_audit_mask)
 - [koss_get_audit_mask](/zh/api/functions/koss_get_audit_mask)
 - [koss_check_sandbox](/zh/api/functions/koss_check_sandbox)
+- [koss_clear_js_audit](/zh/api/functions/koss_clear_js_audit)
 - [koss_enable_audit_debug](/zh/api/functions/koss_enable_audit_debug)

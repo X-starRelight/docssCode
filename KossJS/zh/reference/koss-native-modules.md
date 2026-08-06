@@ -1,6 +1,6 @@
 # Koss 原生模块参考
 
-本文档详细列出 KossJS 的 24 个标准库模块（`koss:*`）及其 API。
+本文档详细列出 KossJS 的 23 个标准库模块（`koss:*`）及其 API。
 
 > **Builtin 标志**：`KOSS_BUILTIN_KOSS`（`1 << 3`）  
 > **设计原则**：同步优先、纯 Uint8Array、零外部依赖
@@ -25,6 +25,7 @@
 | koss:os → koss:system | `require('koss:os')` | 系统信息（别名） |
 | koss:path | `require('koss:path')` | 路径处理 |
 | koss:process | `require('koss:process')` | 进程信息与环境 |
+| koss:querystring | `require('koss:querystring')` | 查询字符串 |
 | koss:stream | `require('koss:stream')` | 流操作 |
 | koss:string_decoder | `require('koss:string_decoder')` | 字符串解码器 |
 | koss:system | `require('koss:system')` | 系统与进程 |
@@ -32,7 +33,6 @@
 | koss:trace_events | `require('koss:trace_events')` | 追踪事件 |
 | koss:url | `require('koss:url')` | URL 解析 |
 | koss:util | `require('koss:util')` | 工具函数 |
-| koss:worker | `require('koss:worker')` | 工作线程 |
 | koss:zlib | `require('koss:zlib')` | 压缩/解压 |
 
 ---
@@ -376,19 +376,6 @@ const entries = io.list('/tmp');
 | `open(path)` | `string` | `NativeLib` | 打开动态库 |
 | `malloc(size)` | `number` | `Pointer` | 分配内存 |
 | `free(pointer)` | `Pointer` | `void` | 释放内存 |
-
----
-
-## koss:worker — 工作线程模块
-
-**导入：** `require('koss:worker')` 或 `import worker from 'koss:worker'`
-
-> **Stable 模式**：`stable=true` 时不可用
-
-| 函数 | 参数 | 返回值 | 说明 |
-|------|------|--------|------|
-| `createPool(size?)` | `number?` | `WorkerPool` | 创建线程池 |
-| `execute(code)` | `string` | `Promise` | 执行 JS 代码 |
 
 ---
 

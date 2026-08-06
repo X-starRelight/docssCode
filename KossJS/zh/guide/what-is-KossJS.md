@@ -177,7 +177,7 @@ koss.destroy()
 | **内存占用** | ~10-15 MB | ~200 KB | ~200 KB |
 | **GC** | 标记-清除 | 引用计数 | 标记-清除 |
 | **GC 停顿** | 有 | 无 | 有 |
-| **并发支持** | 原生 | 单线程 | 单线程 |
+| **并发支持** | 事件循环 + 多实例 | 单线程 | 单线程 |
 | **ES Modules** | ✅ | ❌ | ❌ |
 | **内置 Fetch** | ✅ | ❌ | ❌ |
 | **Node.js 兼容** | 标准库模块 | 无 | 无 |
@@ -202,7 +202,7 @@ KossJS 是一个专业级的嵌入式 JavaScript 解决方案：
 **下一步**:
 - [快速开始](/zh/guide/getting-started) - 立即开始使用 KossJS
 - [Node.js 内置库支持](/zh/reference/nodejs-stdlib-support) - 查看完整的模块支持状态
-- [stable 模式替代方案](/zh/reference/stable-alternatives) - FFI 和 Worker 被禁用时的替代实现
+- [stable 模式替代方案](/zh/reference/stable-alternatives) - FFI 被禁用时的替代实现
 - [API 详解](/zh/api/API-overview) - 了解所有可用功能
 - [Python 接口使用](/zh/interface/py/how-to-use) - Python 开发指南
 - [C/C++ 接口使用](/zh/interface/c_cpp_csharp/how-to-use) - C/C++ 开发指南

@@ -30,8 +30,7 @@
   - 全局变量注入
   - 注册原生函数
   - Fetch API 调用
-  - 沙箱安全（审核掩码、审核回调、调试模式）
-  - Worker 线程池
+  - 沙箱安全（审核掩码、审核回调、调试模式、JS 层审核回调）
 
 ---
 
@@ -53,8 +52,8 @@ koss = KossJS(
   - ***lib_path***: 动态库路径。若为 ***None***，根据操作系统自动选择默认路径
   - ***with_modules***: 是否启用模块加载（默认 ***False***）
   - ***root_dir***: 模块解析的根目录（默认当前目录）
-  - ***capabilities***: 能力位掩码（默认 ***None*** = 全部启用）。参见 [安全与沙箱指南](/zh/security-sandbox/security-sandbox)
-  - ***stable***: 稳定模式（默认 ***True***）。***True*** 时禁用 FFI 和 Worker；***False*** 启用所有功能
+  - ***capabilities***: 能力位掩码（默认 ***None*** = `KOSS_CAP_SANDBOX`，纯计算沙箱）。参见 [安全与沙箱指南](/zh/security-sandbox/security-sandbox)
+  - ***stable***: 稳定模式（默认 ***True***）。***True*** 时禁用 FFI；***False*** 启用 FFI
 
 **能力常量**（28 个细粒度操作）：
 
@@ -109,7 +108,6 @@ KossJS.KOSS_CAP_ALL        = 0xFFFFFFFF
 KossJS.KOSS_CAP_FS              = KossJS.KOSS_CAP_ALL_FS
 KossJS.KOSS_CAP_NET             = KossJS.KOSS_CAP_ALL_NET
 KossJS.KOSS_CAP_CRYPTO          = KossJS.KOSS_CAP_ALL_CRYPTO
-KossJS.KOSS_CAP_WORKER          = 1 << 3
 KossJS.KOSS_CAP_EXTERNAL_LOADER = KossJS.MODULE_LOAD
 `
 
@@ -299,40 +297,22 @@ koss.enable_audit_debug(True)   # 开启
 koss.enable_audit_debug(False)  # 关闭
 `
 
-### 2.7 Worker 线程池
+### 2.7 JS 层审核回调
 
-#### ***create_worker_pool(size: int) -> str***
+#### ***clear_js_audit() -> str***
 
-创建指定大小的 Worker 线程池（最大 64）。
-
-#### ***worker_execute(worker_id: int, code: str) -> str***
-
-在指定 Worker 上执行 JavaScript 代码。
-
-#### ***worker_post_message(worker_id: int, data: str) -> str***
-
-向指定 Worker 发送 JSON 消息。
-
-#### ***worker_try_recv() -> str | None***
-
-非阻塞收取 Worker 消息/执行结果。无消息时返回 None。
-
-#### ***worker_terminate(worker_id: int) -> str***
-
-终止指定 Worker 线程。
-
-#### ***worker_shutdown() -> str***
-
-关闭全部 Worker 线程池。
+清除 JS 层审核回调（由 JS 侧 `KossJS.set_audit_callback` 注册）。清除后，掩码覆盖的操作由宿主审核回调单独决策。
 
 `python
-koss = KossJS(stable=False)  # Worker 需要 stable=False
-koss.create_worker_pool(2)
-koss.worker_execute(0, "1 + 1")
-msg = koss.worker_try_recv()
-print(msg)
-koss.worker_shutdown()
+# JS 侧注册审核回调（拒绝所有 fs 操作）
+koss.eval("KossJS.set_audit_callback(function(t, a, p) { return false; })")
+
+# 宿主清除 JS 层审核回调
+koss.clear_js_audit()
 `
+
+> [!NOTE]
+> Worker 线程池相关方法（`create_worker_pool`、`worker_execute` 等）自 **v0.1.0-dev.10** 起已从 Python 接口移除。
 
 ### 2.8 资源管理
 
@@ -360,7 +340,7 @@ with KossJS() as koss:
 获取 KossJS 版本。
 
 `python
-print(koss.version())  # 输出: 0.1.0-dev.8
+print(koss.version())  # 输出: 0.1.0-dev.10
 `
 
 ---

@@ -160,7 +160,7 @@ pub struct KossBuiltinModule {
 | `trace_events` | `KOSS_BUILTIN_KOSS` | `koss_shim/trace_events.js` | `false` |
 | `url` | `KOSS_BUILTIN_KOSS` | `koss_shim/url.js` | `false` |
 | `util` | `KOSS_BUILTIN_KOSS` | `koss_shim/util.js` | `false` |
-| `worker` | `KOSS_BUILTIN_KOSS` | `koss_shim/worker.js` | `false` |
+| `querystring` | `KOSS_BUILTIN_KOSS` | `koss_shim/querystring.js` | `false` |
 | `zlib` | `KOSS_BUILTIN_KOSS` | `koss_shim/zlib.js` | `false` |
 | `internal/fs` | `KOSS_BUILTIN_NONE` | `internal/fs.js` | `true` |
 | `internal/net` | `KOSS_BUILTIN_NONE` | `internal/net.js` | `true` |

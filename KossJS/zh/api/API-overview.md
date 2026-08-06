@@ -103,14 +103,14 @@ typedef enum {
 
 | 标志位 | 值 | 控制模块 |
 |--------|-----|----------|
-| `KOSS_BUILTIN_NODE` | `1 << 0` | `koss:node/*`（24 个 Node.js 兼容模块） |
+| `KOSS_BUILTIN_NODE` | `1 << 0` | `koss:node/*`（25 个 Node.js 兼容模块） |
 | `KOSS_BUILTIN_BUN` | `1 << 1` | `koss:bun` |
 | `KOSS_BUILTIN_DENO` | `1 << 2` | `koss:deno` |
-| `KOSS_BUILTIN_KOSS` | `1 << 3` | `koss:io/crypto/system/data/ffi/worker` |
+| `KOSS_BUILTIN_KOSS` | `1 << 3` | `koss:io/crypto/system/data/ffi` 等 23 个 koss 标准库模块 |
 
 ### Stable 模式
 
-`stable` 参数控制实例的生产就绪模式。`stable=True`（默认）时禁用 FFI 和 Worker 等不稳定功能。详见 [安全与沙箱指南 - 稳定模式](/zh/security-sandbox/security-sandbox#二稳定模式stable)。
+`stable` 参数控制实例的生产就绪模式。`stable=True`（默认）时禁用 FFI 等不稳定功能。详见 [安全与沙箱指南 - 稳定模式](/zh/security-sandbox/security-sandbox#二稳定模式stable)。
 
 ---
 
@@ -120,7 +120,7 @@ typedef enum {
 
 | 函数名 | 功能描述 |
 |--------|----------|
-| ***koss_create*** | 创建新的 JS 实例（全部能力，stable=true，builtins=ALL） |
+| ***koss_create*** | 创建新的 JS 实例（默认能力 `KOSS_CAP_SANDBOX`，stable=true，builtins=ALL） |
 | ***koss_create_with_caps*** | 按能力位掩码和 stable 模式创建实例 |
 | ***koss_create_with_modules*** | 创建支持模块加载的 JS 实例（stable=true，builtins=ALL） |
 | ***koss_create_with_modules_and_caps*** | 创建支持模块加载 + 能力控制 + stable 模式的实例 |
@@ -139,6 +139,7 @@ typedef enum {
 | ***koss_set_audit_mask*** | 设置审核掩码 |
 | ***koss_get_audit_mask*** | 获取当前审核掩码 |
 | ***koss_check_sandbox*** | 注册/清除同步审核回调 |
+| ***koss_clear_js_audit*** | 清除 JS 层审核回调（`KossJS.set_audit_callback` 注册） |
 | ***koss_enable_audit_debug*** | 启用/禁用审核调试模式 |
 
 ### 代码执行
@@ -177,16 +178,18 @@ typedef enum {
 | ***koss_register_class*** | 注册支持 `new` 关键字的 JS 类 |
 | ***koss_register_module_loader*** | 注册模块加载器 |
 
-### Worker 线程池
+### Worker 线程池（已移除）
+
+> **v0.1.0-dev.10 已移除。** Worker 线程池相关 API 不再存在于动态库中，以下页面仅为历史记录。
 
 | 函数名 | 功能描述 |
 |--------|----------|
-| ***koss_create_worker_pool*** | 创建指定大小的 Worker 线程池 |
-| ***koss_worker_post_message*** | 向指定 Worker 发送消息 |
-| ***koss_worker_execute*** | 在 Worker 线程上执行代码 |
-| ***koss_worker_try_recv*** | 非阻塞收取 Worker 消息/结果 |
-| ***koss_worker_terminate*** | 终止指定 Worker |
-| ***koss_worker_shutdown*** | 关闭全部 Worker 线程池 |
+| ~~***koss_create_worker_pool***~~ | ~~创建指定大小的 Worker 线程池~~（已移除） |
+| ~~***koss_worker_post_message***~~ | ~~向指定 Worker 发送消息~~（已移除） |
+| ~~***koss_worker_execute***~~ | ~~在 Worker 线程上执行代码~~（已移除） |
+| ~~***koss_worker_try_recv***~~ | ~~非阻塞收取 Worker 消息/结果~~（已移除） |
+| ~~***koss_worker_terminate***~~ | ~~终止指定 Worker~~（已移除） |
+| ~~***koss_worker_shutdown***~~ | ~~关闭全部 Worker 线程池~~（已移除） |
 
 ### Fetch & 内部绑定
 
@@ -231,6 +234,7 @@ typedef enum {
 - [koss_set_audit_mask](/zh/api/functions/koss_set_audit_mask)
 - [koss_get_audit_mask](/zh/api/functions/koss_get_audit_mask)
 - [koss_check_sandbox](/zh/api/functions/koss_check_sandbox)
+- [koss_clear_js_audit](/zh/api/functions/koss_clear_js_audit)
 - [koss_enable_audit_debug](/zh/api/functions/koss_enable_audit_debug)
 
 ### 代码执行
@@ -255,13 +259,13 @@ typedef enum {
 - [koss_register_class](/zh/api/functions/koss_register_class)
 - [koss_register_module_loader](/zh/api/functions/koss_register_module_loader)
 
-### Worker 线程池
-- [koss_create_worker_pool](/zh/api/functions/koss_create_worker_pool)
-- [koss_worker_post_message](/zh/api/functions/koss_worker_post_message)
-- [koss_worker_execute](/zh/api/functions/koss_worker_execute)
-- [koss_worker_try_recv](/zh/api/functions/koss_worker_try_recv)
-- [koss_worker_terminate](/zh/api/functions/koss_worker_terminate)
-- [koss_worker_shutdown](/zh/api/functions/koss_worker_shutdown)
+### Worker 线程池（已移除）
+- [koss_create_worker_pool](/zh/api/functions/koss_create_worker_pool)（已移除）
+- [koss_worker_post_message](/zh/api/functions/koss_worker_post_message)（已移除）
+- [koss_worker_execute](/zh/api/functions/koss_worker_execute)（已移除）
+- [koss_worker_try_recv](/zh/api/functions/koss_worker_try_recv)（已移除）
+- [koss_worker_terminate](/zh/api/functions/koss_worker_terminate)（已移除）
+- [koss_worker_shutdown](/zh/api/functions/koss_worker_shutdown)（已移除）
 
 ### Fetch & 内部绑定
 - [koss_fetch](/zh/api/functions/koss_fetch)

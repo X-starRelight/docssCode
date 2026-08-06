@@ -157,7 +157,12 @@ await Deno.writeTextFile('/tmp/output.txt', 'Hello');
 | `koss:system` | 系统信息（架构/平台/内存） |
 | `koss:data` | 数据编码（Hex/Base64） |
 | `koss:ffi` | 外部函数接口 |
-| `koss:worker` | 工作线程 |
+| `koss:buffer` | Buffer 与二进制数据 |
+| `koss:assert` | 断言库 |
+| `koss:constants` | 系统常量 |
+| `koss:querystring` | 查询字符串 |
+| `koss:zlib` | 压缩/解压 |
+| ... | 共 23 个 koss 标准库模块（详见 [Koss 原生模块参考](/zh/reference/koss-native-modules)） |
 
 ```javascript
 // 启用后可用
@@ -184,7 +189,7 @@ KOSS_BUILTIN_NODE | KOSS_BUILTIN_BUN | KOSS_BUILTIN_DENO | KOSS_BUILTIN_KOSS
 |------|------------|---------|
 | **层级** | L1（Rust 绑定） | L3（JS 模块） |
 | **控制对象** | 底层操作权限 | 上层模块可见性 |
-| **默认值** | `KOSS_CAP_ALL` | `KOSS_BUILTIN_ALL` |
+| **默认值** | `KOSS_CAP_SANDBOX`（v0.1.0-dev.10 起） | `KOSS_BUILTIN_ALL` |
 | **交互方式** | 运行时检查 | 模块加载时检查 |
 | **错误类型** | `KossCapabilityError` | `KossBuiltinError` |
 
@@ -232,7 +237,7 @@ koss.eval("""
 | 仅 Bun | `ALL_FS + ALL_NET` | `BUN` | 只加载 Bun 兼容层 |
 | 仅加密 | `ALL_CRYPTO` | `KOSS` | 只加载 koss:crypto |
 | 沙箱模式 | `SANDBOX` | `NONE` | 无内置模块，无能力 |
-| 生产模式 | `ALL` | `ALL` + `stable=true` | 禁用 FFI/Worker |
+| 生产模式 | `ALL` | `ALL` + `stable=true` | 禁用 FFI |
 
 ---
 
@@ -358,7 +363,7 @@ KossBuiltinError: Cannot import 'koss:internal/fs'
 ## 最佳实践
 
 1. **最小权限原则**：只启用需要的 Builtin 标志
-2. **生产环境使用 `stable=true`**：自动剥离 FFI 和 Worker 能力
+2. **生产环境使用 `stable=true`**：自动剥离 FFI 能力
 3. **组合使用 Capability 和 Builtin**：实现精细的权限控制
 4. **避免直接访问 `koss:internal/*`**：使用 L3 兼容层 API
 

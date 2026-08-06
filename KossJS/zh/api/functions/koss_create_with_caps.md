@@ -14,7 +14,7 @@ KossInstance* koss_create_with_caps(uint32_t caps, bool stable);
 | 参数 | 类型 | 说明 |
 |------|------|------|
 | ***caps*** | ***uint32_t*** | 能力位掩码（见 KossCapability） |
-| ***stable*** | ***bool*** | 稳定模式。`true`（默认）禁用 FFI 和 Worker；`false` 启用所有功能 |
+| ***stable*** | ***bool*** | 稳定模式。`true`（默认）禁用 FFI；`false` 启用 FFI |
 
 ## 能力位定义
 
@@ -70,9 +70,9 @@ KOSS_CAP_ALL        = 0xFFFFFFFF
 
 创建一个新的 JS 实例，通过位掩码精确控制可用的能力（文件系统、网络、加密、FFI、模块加载等）。被禁用的能力在 JS 侧调用时返回 undefined 或抛出 TypeError。
 
-`stable` 参数控制是否启用 FFI 和 Worker 等不稳定功能：
-- `stable=true`（推荐）：自动剥离 FFI 和 Worker 能力位，生产环境使用
-- `stable=false`：启用所有功能，开发/调试用
+`stable` 参数控制是否启用 FFI 等不稳定功能：
+- `stable=true`（推荐）：自动剥离 FFI 能力位，生产环境使用
+- `stable=false`：启用 FFI，开发/调试用
 
 详见 [安全与沙箱指南](/zh/security-sandbox/security-sandbox)。
 
@@ -92,7 +92,7 @@ KossInstance* inst2 = koss_create_with_caps(KOSS_CAP_ALL_NET, true);
 // 允许 fs + net，禁止 crypto + FFI
 KossInstance* inst3 = koss_create_with_caps(KOSS_CAP_ALL_FS | KOSS_CAP_ALL_NET, true);
 
-// 开发模式（启用 FFI 和 Worker）
+// 开发模式（启用 FFI）
 KossInstance* inst4 = koss_create_with_caps(KOSS_CAP_ALL, false);
 ```
 
@@ -107,8 +107,8 @@ koss = KossJS(capabilities=KossJS.KOSS_CAP_SANDBOX)
 # 部分启用
 koss2 = KossJS(capabilities=KossJS.KOSS_CAP_ALL_NET | KossJS.KOSS_CAP_ALL_CRYPTO)
 
-# 开发模式（启用 FFI 和 Worker）
-koss3 = KossJS(stable=False)
+# 开发模式（启用 FFI）
+koss3 = KossJS(capabilities=KossJS.KOSS_CAP_ALL, stable=False)
 ```
 
 ## 相关 API

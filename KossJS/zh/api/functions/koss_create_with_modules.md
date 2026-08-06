@@ -19,11 +19,11 @@ static inline KossInstance* koss_create_with_modules(const char* root_dir);
 
 创建一个新的 JavaScript 实例，并启用模块解析功能。可以使用 `require()` 加载模块。
 
-此函数是 `koss_create_with_modules_and_caps(root_dir, KOSS_CAP_ALL, true)` 的便捷封装，等价于：
-- 启用所有 28 个能力位
-- 启用稳定模式（禁用 FFI 和 Worker）
+此函数等价于 `koss_create_with_modules_and_builtins(root_dir, KOSS_CAP_SANDBOX, KOSS_BUILTIN_ALL, true)`：
+- 能力位：`KOSS_CAP_SANDBOX`（0，无任何系统能力）
+- 启用稳定模式（禁用 FFI）
 
-如需精确控制能力位或启用 FFI/Worker，请使用 [koss_create_with_modules_and_caps](/zh/api/functions/koss_create_with_modules_and_caps)。
+> **v0.1.0-dev.10 行为变更**：默认能力由 `KOSS_CAP_ALL` 改为 `KOSS_CAP_SANDBOX`。如需授予能力，请使用 [koss_create_with_modules_and_caps](/zh/api/functions/koss_create_with_modules_and_caps) 显式传入 `KOSS_CAP_ALL`（或所需能力位）。
 
 ## 向后兼容性
 
