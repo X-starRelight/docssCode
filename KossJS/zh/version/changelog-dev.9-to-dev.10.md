@@ -2,7 +2,7 @@
 
 本文档记录从 0.1.0-dev.9 到 0.1.0-dev.10 的所有变更。
 
-> 测试统计：744 passed, 8 skipped (Python) | 156 passed, 0 failed (Rust)
+> 测试统计（静态函数计数）：Rust 110 → 156（+46）| Python 438 → 498（+60）
 
 ---
 
@@ -134,28 +134,41 @@ KossJS.set_audit_callback(function (target, args, pwd) {
 
 #### 1. Node 内置模块 shim 扩充
 
-`koss:*` 标准库模块显著扩充：
+`koss:*` 标准库模块显著扩充，新增 **18 个** koss 原生 shim 模块（提交 30430da、28467e3）：
 
 | 模块 | 说明 |
 |------|------|
 | `koss:assert` | 断言库 |
 | `koss:buffer` | Buffer（索引访问、Array 构造、toString 不可枚举） |
 | `koss:constants` | 系统常量 |
+| `koss:diagnostics_channel` | 诊断通道 |
+| `koss:events` | 事件发射器 |
+| `koss:http` | HTTP 客户端/服务器 |
+| `koss:net` | TCP 网络 |
+| `koss:os` | 操作系统信息 |
+| `koss:path` | 路径处理（兼容 Windows 分隔符） |
+| `koss:process` | 进程信息 |
 | `koss:querystring` | 查询字符串 |
+| `koss:stream` | 流操作 |
+| `koss:string_decoder` | 字符串解码器 |
+| `koss:timers` | 定时器 |
+| `koss:trace_events` | 追踪事件 |
+| `koss:url` | URL 解析 |
+| `koss:util` | 工具函数 |
 | `koss:zlib` | 压缩/解压 |
 
 - **os shim**：新增 `version()` / `machine()` 与 `os.constants`（信号、errno 表）
-- **crypto shim**：`hash` / `hmac` 直接返回 hex；`sign` / `verify` 改用 HMAC-SHA256 加密钥派生
-- **path shim**：兼容 Windows 分隔符
+- **crypto shim**：`hash` / `hmac` 直接返回 hex；`sign` / `verify` 改用 HMAC-SHA256 加密钥派生；**新增 AES-GCM 对称加密**（`encrypt` / `decrypt`，基于新增 `aes-gcm` 依赖）
+- **buffer shim**：支持索引访问、`Array` 构造、`toString` 改为不可枚举
 - **Deno shim**：`Deno.mkdir` 幂等处理 `EEXIST`
 
 #### 2. 全平台 shim 迁移
 
-所有平台 shim 迁移到 koss 标准库，扩充 Rust 原生实现（提交 30430da）。
+所有平台 shim 迁移到 koss 标准库，扩充 Rust 原生实现（提交 30430da，`embedded_stdlib.rs` 大幅扩充）。
 
 #### 3. ESM import 支持 `koss:/*` 协议
 
-ESM `import` 支持 `koss:/*` 协议模块，并补全 Rust 单元测试（提交 34a945c）。
+ESM `import` 支持 `koss:/*` 协议模块，并补全 Rust 单元测试（提交 34a945c，新增 `builtins.rs` 27 个、`module_loader.rs` 2 个测试）。
 
 #### 4. 正式删除 `src/stdlib` 目录
 
@@ -164,6 +177,16 @@ ESM `import` 支持 `koss:/*` 协议模块，并补全 Rust 单元测试（提�
 #### 5. Python 接口优化
 
 优化 `kossjs_interface.py` 的动态库寻找逻辑（支持 ARM64/x86 等平台后缀）。
+
+#### 6. TypeScript 接口
+
+- 新增 `clearJsAudit()`（对应 C ABI `koss_clear_js_audit`）
+- 移除 Worker 相关绑定（`createWorkerPool` / `workerPostMessage` 等）
+- 移除 `KOSS_CAP_WORKER` 能力位常量
+
+#### 7. 版本号变更
+
+Cargo.toml / `src/version.rs`：`0.1.0-dev.9` → `0.1.0-dev.10`
 
 ---
 
@@ -180,17 +203,51 @@ ESM `import` 支持 `koss:/*` 协议模块，并补全 Rust 单元测试（提�
 
 ---
 
+### 依赖变更
+
+Cargo.toml 依赖升级与新增：
+
+| 类别 | 依赖 | 变更 |
+|------|------|------|
+| 升级 | `base64` | 0.22 → 0.23.0 |
+| 升级 | `tokio` | 1.52.3 → 1.53.1 |
+| 升级 | `rustls` | 0.23.41 → 0.23.42 |
+| 升级 | `libc` | 0.2.186 → 0.2.189 |
+| 升级 | `serde` / `serde_json` | 1.0.150 → 1.0.229 / 1.0.151 |
+| 新增 | `aes-gcm` | 0.11.0（AES-GCM 对称加密） |
+| 新增 | `ed25519-dalek` | 3.0.0（Ed25519 签名） |
+| 新增 | `constant_time_eq` | 0.5.0（常量时间比较） |
+| 新增 | `quinn-proto` | 0.11.15（QUIC 协议） |
+
+---
+
+### 许可证更新
+
+- `LICENSE.md` 大幅修订（+187 行），`README.md` 同步更新（提交 12ae743、375ceb9、02201c5）
+- 所有源代码文件添加头部版权标识（TT23XR Studio / AGPL-3.0）
+
+---
+
 ### 测试统计
 
-| 版本 | Python 测试 | Rust 测试 | 总计 |
-|------|-------------|-----------|------|
-| dev.9 | 731 passed | 140 passed | 871 |
-| dev.10 | 744 passed, 8 skipped | 156 passed | 900 |
-| **增量** | **+13** | **+16** | **+29** |
+| 版本 | Python 测试 | Rust 测试 |
+|------|-------------|-----------|
+| dev.9 | 438 | 110 |
+| dev.10 | 498 | 156 |
+| **增量** | **+60** | **+46** |
 
-新增测试：
+> 统计口径：Python 按 `def test_` 函数数、Rust 按 `#[test]` 属性数统计（静态函数计数）。
+
+新增 Python 测试文件（3 个）：
+- `test_esm_import.py`（39 个）：ESM import `koss:/*` 协议模块
+- `test_sandbox_fs.py`（6 个）：FS 能力位门控、无损二进制写入（C1/H6）
 - `test_sandbox_js_audit.py`（11 个）：JS 层审核回调（放行/拒绝/异常/重入、宿主与 JS 关系、pwd、清除）
-- Rust：`test_js_audit_*`（7 个）：JS 审核决策、重入、宿主优先级、pwd
+
+新增 Rust 测试（按文件）：
+- `builtins.rs` +27：Builtin 模块系统（标志位、koss: 协议解析、错误消息）
+- `runtime.rs` +16：JS 审核回调（`test_js_audit_*`）、pwd 语义、审核掩码/回调关系、细粒度能力位注册
+- `resolver.rs` +3、`bindings.rs` +2：模块解析、绑定注册
+- `napi/value.rs` +5、`module_loader.rs` +2、`_senri_ffi/struct_def.rs` +2：N-API tagged value、模块加载器、FFI struct CString
 
 ---
 
