@@ -20,7 +20,7 @@ lib.close()      # Python
 - 重复调用不报错（幂等）
 
 > [!WARNING]
-> `close()` **不等待**异步任务完成。如果存在进行中的 `funcAsync` 任务（JS），调用 `close()` 后这些任务可能继续访问已释放的内存。此时应使用 `closeAsync()`（仅 JS 支持）。
+> `close()` **不等待**异步任务完成。如果存在进行中的 `funcAsync` 任务，调用 `close()` 后这些任务可能继续访问已释放的内存。此时应使用 `closeAsync()`。
 
 ---
 
