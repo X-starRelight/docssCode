@@ -25,6 +25,8 @@ typedef struct {
 | 1 | JavaScript 执行错误 |
 | 2 | 无效参数 |
 
+> 部分函数（如 `koss_get_binding`）还会返回额外错误码：`3` = 能力位拒绝、`4` = 审核配置错误/审核拒绝，详见各函数页面的"返回码"。
+
 ### KossNativeFn
 
 原生函数回调类型：
@@ -103,7 +105,7 @@ typedef enum {
 
 | 标志位 | 值 | 控制模块 |
 |--------|-----|----------|
-| `KOSS_BUILTIN_NODE` | `1 << 0` | `koss:node/*`（25 个 Node.js 兼容模块） |
+| `KOSS_BUILTIN_NODE` | `1 << 0` | `koss:node/*`（29 个 Node.js 兼容模块） |
 | `KOSS_BUILTIN_BUN` | `1 << 1` | `koss:bun` |
 | `KOSS_BUILTIN_DENO` | `1 << 2` | `koss:deno` |
 | `KOSS_BUILTIN_KOSS` | `1 << 3` | `koss:io/crypto/system/data/ffi` 等 23 个 koss 标准库模块 |

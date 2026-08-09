@@ -18,16 +18,16 @@ void koss_enable_audit_debug(KossInstance* inst, bool enable);
 
 ## 说明
 
-调试模式开启后，错误消息包含详细的拒绝原因、超时信息和回调失败详情。生产环境应关闭调试模式，避免信息泄露。
+调试模式开启后，错误消息包含详细的拒绝原因和回调失败详情。生产环境应关闭调试模式，避免信息泄露。
+
+> **注意（v0.1.0-dev.10）：** 审核链为同步执行，不存在"异步审核超时/取消"错误；`KossTimeoutError`/`KossCancelError` 仅作为内部占位辅助函数存在，实际运行时不会产生。
 
 **调试模式效果**：
 
 | 场景 | 调试模式关闭 | 调试模式开启 |
 |------|-------------|-------------|
 | 能力位拒绝 | `KossCapabilityError: Access denied` | `KossCapabilityError: capability denied for fs.readFile` |
-| 审核回调拒绝 | `KossSecurityError: Access denied` | `KossSecurityError: sandbox audit denied for fs.readFile (path: /etc/passwd)` |
-| 异步审核超时 | `KossTimeoutError: Access denied` | `KossTimeoutError: sandbox audit timed out for fetch` |
-| 审核取消 | `KossCancelError: Access denied` | `KossCancelError: sandbox audit cancelled for _senri_ffi.open` |
+| 审核回调拒绝 | `KossSecurityError: Access denied` | `KossSecurityError: sandbox audit denied for fs.readFile` |
 
 ## 使用示例
 

@@ -80,18 +80,17 @@ class KossJS:
     KOSS_BUILTIN_ALL  = 0xFFFFFFFF
 ```
 
-### TypeScript 枚举
+### TypeScript 常量
 
 ```typescript
 // kossjs_interface.ts
-export enum KossBuiltin {
-    NONE = 0,
-    NODE = 1 << 0,
-    BUN  = 1 << 1,
-    DENO = 1 << 2,
-    KOSS = 1 << 3,
-    ALL  = 0xFFFFFFFF,
-}
+// TypeScript 封装未导出独立枚举，使用 KossJS 类的静态常量：
+static readonly KOSS_BUILTIN_NONE = 0;
+static readonly KOSS_BUILTIN_NODE = 1 << 0;
+static readonly KOSS_BUILTIN_BUN  = 1 << 1;
+static readonly KOSS_BUILTIN_DENO = 1 << 2;
+static readonly KOSS_BUILTIN_KOSS = 1 << 3;
+static readonly KOSS_BUILTIN_ALL  = 0xFFFFFFFF;
 ```
 
 ---
@@ -100,13 +99,14 @@ export enum KossBuiltin {
 
 ### KOSS_BUILTIN_NODE (1 << 0)
 
-控制 `koss:node/*` 命名空间下的 24 个 Node.js 兼容模块：
+控制 `koss:node/*` 命名空间下的 29 个 Node.js 兼容模块：
 
 ```javascript
 // 启用后可用
 import fs from 'koss:node/fs';
 import path from 'koss:node/path';
 import http from 'koss:node/http';
+import { setTimeout as delay } from 'koss:node/timers/promises';
 
 // 或使用 require
 const fs = require('koss:node/fs');
@@ -116,9 +116,9 @@ const fs = require('koss:node/fs');
 - 文件系统：fs
 - 网络：net, http, https, dns, dgram, tls
 - 加密：crypto
-- 数据：buffer, stream, events, path, url, querystring
+- 数据：buffer, stream, stream/promises, stream/consumers, events, path, url, querystring
 - 系统：os, process, util, assert, constants
-- 其他：timers, string_decoder, perf_hooks, trace_events, diagnostics_channel
+- 其他：timers, timers/promises, string_decoder, perf_hooks, trace_events, diagnostics_channel, console
 
 ### KOSS_BUILTIN_BUN (1 << 1)
 
@@ -148,12 +148,12 @@ await Deno.writeTextFile('/tmp/output.txt', 'Hello');
 
 ### KOSS_BUILTIN_KOSS (1 << 3)
 
-控制 6 个 Koss 原生模块：
+控制 23 个 Koss 原生模块：
 
 | 模块 | 说明 |
 |------|------|
 | `koss:io` | 统一 I/O（文件+网络+流） |
-| `koss:crypto` | 加密与安全（哈希/HMAC/随机） |
+| `koss:crypto` | 加密与安全（哈希/HMAC/AES-GCM/Ed25519） |
 | `koss:system` | 系统信息（架构/平台/内存） |
 | `koss:data` | 数据编码（Hex/Base64） |
 | `koss:ffi` | 外部函数接口 |
@@ -310,18 +310,19 @@ koss.destroy()
 ### TypeScript
 
 ```typescript
-import { KossJS, KossBuiltin } from './kossjs_interface';
+import { KossJS } from './kossjs_interface';
 
-// 组合多个 Builtin 标志
-const koss = new KossJS({
-    capabilities: 0xFFFFFFFF,
-    builtins: KossBuiltin.NODE | KossBuiltin.KOSS,
-    stable: true
-});
+// 组合多个 Builtin 标志（位置参数：libPath?, stable?, caps?, builtins?）
+const koss = new KossJS(
+    undefined,
+    true,
+    KossJS.KOSS_CAP_ALL,
+    KossJS.KOSS_BUILTIN_NODE | KossJS.KOSS_BUILTIN_KOSS
+);
 
 // 检查状态
 console.log(`Builtins: ${koss.getBuiltins().toString(16)}`);
-console.log(`Bun enabled: ${koss.isBuiltinEnabled(KossBuiltin.BUN)}`);
+console.log(`Bun enabled: ${koss.isBuiltinEnabled(KossJS.KOSS_BUILTIN_BUN)}`);
 
 // Node 和 Koss 模块可用
 koss.eval(`

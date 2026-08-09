@@ -43,11 +43,11 @@ if (KossJS.isStable) {
 
 ### Rust 层保护
 
-所有属性均设置为 `READONLY | ENUMERABLE | PERMANENT`：
+`version`、`runtime`、`isStable` 均设置为 `READONLY | ENUMERABLE | PERMANENT`；`set_audit_callback` 为 `WRITABLE | CONFIGURABLE`（需允许 JS 层重复注册/清除回调），其最终不可变由 JS 层 `Object.freeze` 保证。
 
 | 攻击向量 | 防护措施 |
 |----------|----------|
-| `KossJS = {}` | READONLY 阻止重新赋值 |
+| `KossJS = {}` | READONLY 阻止重新赋值（最终由 JS 层 defineProperty 加固） |
 | `KossJS.version = "x"` | READONLY 阻止属性修改 |
 | `delete KossJS.version` | PERMANENT 阻止删除属性 |
 | `Object.defineProperty(...)` | PERMANENT 阻止重新定义属性 |

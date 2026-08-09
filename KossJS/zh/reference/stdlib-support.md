@@ -41,43 +41,47 @@ Web API（如 `fetch`、`Headers`、`Response`）作为全局对象直接可用�
 
 ## 二、Node.js 兼容层（`koss:node/*` / `node:*` / 裸名）
 
-由 `KOSS_BUILTIN_NODE`（`1 << 0`）标志控制，共 **25 个模块**。
+由 `KOSS_BUILTIN_NODE`（`1 << 0`）标志控制，共 **29 个模块**。
 底层实现委托给 `koss:*` 标准库模块。
 
-### 完整支持（19 个）
+### 完整支持（24 个）
 
 | 模块 | 导入路径 | 底层实现 | 说明 |
 |------|----------|----------|------|
 | assert | `require('assert')` | `koss:assert` | 断言库 |
 | buffer | `require('buffer')` | `koss:buffer` | Buffer、Blob、File |
+| console | `require('console')` | 全局 `console` | 控制台对象 |
 | constants | `require('constants')` | `koss:constants` | 系统常量 |
 | diagnostics_channel | `require('diagnostics_channel')` | `koss:diagnostics_channel` | 诊断通道 |
 | events | `require('events')` | `koss:events` | EventEmitter |
-| fs | `require('fs')` | `koss:io` + 包装 | 文件系统（同步+回调+Promise） |
+| fs | `require('fs')` | `koss:io` + fd 级原生层 | 文件系统（同步+回调+Promise，含 Stats/Dirent/fd 级 API） |
 | http | `require('http')` | `koss:http` | HTTP 服务器/客户端 |
-| https | `require('https')` | `koss:http` + 封装 | HTTPS（无实际 TLS） |
+| https | `require('https')` | `koss:http` + 封装 | HTTPS（显式抛 `_unsupported`，无真实 TLS） |
 | net | `require('net')` | `koss:net` | TCP 网络 |
 | os | `require('os')` | `koss:os` | 操作系统信息 |
 | path | `require('path')` | `koss:path` | 路径处理（posix/win32） |
 | process | `require('process')` | `koss:process` | 进程全局对象 |
 | querystring | `require('querystring')` | `koss:querystring` | 查询字符串 |
 | stream | `require('stream')` | `koss:stream` | 流操作 |
+| stream/consumers | `require('stream/consumers')` | 内联实现 | 流消费工具（json/text/buffer/arrayBuffer/blob） |
+| stream/promises | `require('stream/promises')` | 内联实现 | 流 Promise 接口（pipeline/finished） |
 | string_decoder | `require('string_decoder')` | `koss:string_decoder` | 字符串解码器 |
 | timers | `require('timers')` | `koss:timers` | 定时器 |
+| timers/promises | `require('timers/promises')` | 内联实现 | 定时器 Promise 接口（setTimeout/scheduler） |
 | trace_events | `require('trace_events')` | `koss:trace_events` | 追踪事件 |
 | url | `require('url')` | `koss:url` | URL 解析 |
 | util | `require('util')` | `koss:util` | 工具函数 |
 | zlib | `require('zlib')` | `koss:zlib` | 压缩/解压 |
 
-### 部分支持（6 个）
+### 部分支持（5 个）
 
 | 模块 | 可用 API | 限制 |
 |------|----------|------|
-| crypto | `randomBytes`, `createHash` (sha256/sha1/md5), `randomUUID`, `timingSafeEqual`, `randomFill`, `getHashes` | 有限算法集 |
-| dgram | `createSocket`, `bind`, `send`, `close` | 基于 TCP 桥接，非真实 UDP |
-| dns | `lookup`, `resolve`, `resolve4`, `resolve6`, `promises.*` | `lookupService` 为 stub |
-| perf_hooks | `performance.now/mark/measure`, `PerformanceObserver`, `createHistogram` | `monitorEventLoopDelay` 为 stub |
-| tls | `connect`, `createServer`, `TLSSocket`, `createSecureContext` | 无实际 TLS 加密 |
+| crypto | `randomBytes`, `createHash` (sha1/sha256/sha384/sha512/md5), `createHmac`, `createCipheriv`/`createDecipheriv` (AES-GCM), `generateKeyPairSync` (ed25519), `sign`/`verify`, `pbkdf2`, `randomUUID`, `timingSafeEqual`, `randomFill`, `getHashes`, `getCiphers`, `getCurves`, `webcrypto` | 算法集有限（无 RSA/ECC 完整支持） |
+| dgram | `createSocket`, `bind`, `send`, `recv`, `close`, `address` | 真实 UDP（`__koss_udp_*`）；多播/广播选项为 no-op |
+| dns | `lookup`, `resolve`, `resolve4`, `resolve6`, `lookupService`, `isIP`/`isIPv4`/`isIPv6`, `promises.*` | `resolve` 对 MX/TXT/NS/CNAME 返回原结果 |
+| perf_hooks | `performance.now/mark/measure`, `performance.timeOrigin`, `PerformanceObserver`, `createHistogram`, `Histogram`, `monitorEventLoopDelay` | 直方图为对数分桶近似实现 |
+| tls | — | 未实现真实 TLS，所有入口显式抛 `_unsupported` 错误 |
 
 ### ESM 导入支持
 
@@ -117,19 +121,23 @@ import fs from 'fs';
 | API | 类型 | 说明 |
 |-----|------|------|
 | `Bun.version` | `string` | '1.1.42' |
-| `Bun.build` | `string` | 'koss-bun-compat' |
 | `Bun.env` | `object` | 环境变量（`koss:system.env()`） |
 | `Bun.argv` | `string[]` | 命令行参数 |
 | `Bun.write(path, data)` | `function` | 写入文件 |
-| `Bun.file(path)` | `function` | 文件对象（size/text/json/arrayBuffer/exists） |
-| `Bun.serve(options)` | `function` | HTTP 服务器 |
+| `Bun.file(path)` | `function` | 文件对象（size/text/json/arrayBuffer/exists/stream） |
+| `Bun.serve(options)` | `function` | 服务器（TCP 监听，未接线 handler） |
 | `Bun.sleep(ms)` | `function` | 延迟（Promise） |
 | `Bun.inspect(value)` | `function` | 检查值 |
 | `Bun.peek(iterable)` | `function` | 窥视迭代器第一个元素 |
-| `Bun.which(cmd)` | `function` | 查找可执行文件路径 |
+| `Bun.which(cmd)` | `function` | 按 PATH 查找可执行文件（返回路径或 null） |
 | `Bun.randomUUIDv7()` | `function` | 生成 UUID v4 |
-| `Bun.resolve(path)` | `function` | 解析绝对路径 |
+| `Bun.resolve(path)` | `function` | 返回输入原样（no-op） |
 | `Bun.hash(algorithm, data)` | `function` | 计算哈希值 |
+| `Bun.CryptoHasher` | `class` | 流式哈希（update/digest） |
+| `Bun.Glob` | `class` | 文件通配匹配（match/scan） |
+| `Bun.Cookie` / `Bun.CookieMap` | `class` | Cookie 解析 |
+| `Bun.fileURLToPath` / `Bun.pathToFileURL` | `function` | URL 与路径互转 |
+| `Bun.gzipSync` / `gunzipSync` / `deflateSync` / `inflateSync` | `function` | 压缩/解压 |
 
 ### 不支持
 
@@ -221,15 +229,33 @@ import fs from 'fs';
 
 ## 五、Web API（全局可用，无需 require）
 
+v0.1.0-dev.10 新增 `web_api.js` 引导模块，将以下 Web 标准 API 安装到 `globalThis`：
+
 | API | 说明 | 实现方式 |
 |-----|------|---------|
-| **fetch** | `fetch(url, init)` 标准 Web API | Rust reqwest + rustls |
-| **Headers** | Web API Headers 类 | 纯 JS |
-| **Response** | Web API Response 类 | 纯 JS |
-| **URL** | 全局 URL 类 | 原生 / koss:url |
-| **URLSearchParams** | 全局 URLSearchParams 类 | 原生 / koss:url |
-| **setTimeout / clearTimeout** | 全局定时器 | 原生 |
-| **setInterval / clearInterval** | 全局间隔 | 原生 |
+| `self` / `global` | 全局对象自引用 | 纯 JS |
+| `queueMicrotask` | 微任务调度 | 纯 JS |
+| `structuredClone` | 结构化克隆 | 纯 JS |
+| `fetch` | `fetch(url, init)` 标准 Web API | Rust reqwest + rustls（支持 AbortSignal） |
+| `Headers` / `Response` | Web API 头部/响应类 | 纯 JS |
+| `Request` | 请求类（含 body 读取方法） | 纯 JS |
+| `FormData` / `File` | 表单数据/文件类 | 纯 JS |
+| `URL` / `URLSearchParams` | URL 类 | koss:url |
+| `URLPattern` | URL 模式匹配 | 纯 JS |
+| `Event` / `CustomEvent` / `MessageEvent` / `ErrorEvent` / `CloseEvent` | 事件类族 | 纯 JS |
+| `EventTarget` | 事件目标基类 | 纯 JS |
+| `DOMException` | DOM 异常类 | 纯 JS |
+| `AbortController` / `AbortSignal` | 中止控制（含 `AbortSignal.timeout/any/throwIfAborted`） | 纯 JS |
+| `performance` | 性能时钟（单调时钟） | koss:node/perf_hooks |
+| `navigator` / `reportError` | 导航器/错误上报 | 纯 JS |
+| `crypto` | `getRandomValues`/`randomUUID`/`randomBytes`/`subtle`（digest/encrypt/decrypt/generateKey/sign/verify/importKey/exportKey） | koss:crypto |
+| `ReadableStream` / `WritableStream` / `TransformStream` | Web 流（含 QueuingStrategy/控制器） | 纯 JS |
+| `TextEncoderStream` / `TextDecoderStream` | 文本流编解码 | 纯 JS |
+| `CompressionStream` / `DecompressionStream` | 压缩流 | koss:zlib |
+| `MessageChannel` / `MessagePort` | 消息通道 | 纯 JS |
+| `BroadcastChannel` | 广播通道 | 纯 JS |
+| `Storage` / `localStorage` / `sessionStorage` | 存储（内存实现） | 纯 JS |
+| `setTimeout` / `clearTimeout` / `setInterval` / `clearInterval` | 全局定时器 | 原生 |
 
 ---
 
@@ -238,10 +264,10 @@ import fs from 'fs';
 | 分类 | 数量 |
 |------|------|
 | koss 标准库模块 (`koss:*`) | 23 |
-| Node.js 兼容模块 (`koss:node/*`) | 25 |
+| Node.js 兼容模块 (`koss:node/*`) | 29 |
 | Bun 兼容层 (`koss:bun`) | 1 个命名空间 |
 | Deno 兼容层 (`koss:deno`) | 1 个命名空间 |
-| Web API (全局) | 6+ |
+| Web API (全局) | 25+ |
 | 架构否决 | 11 |
 | 搁置（未来可能） | 4 |
 
@@ -253,6 +279,6 @@ import fs from 'fs';
 - [ESM Import 支持指南](/zh/guide/esm-import) — import 语法说明
 - [koss: 协议模块参考](/zh/reference/koss-protocol) — 模块解析规则
 - [Koss 原生模块参考](/zh/reference/koss-native-modules) — 23 个 koss:\* 模块完整 API
-- [Node.js 兼容层参考](/zh/reference/node-compat-layer) — 25 个 Node 模块 API
+- [Node.js 兼容层参考](/zh/reference/node-compat-layer) — 29 个 Node 模块 API
 - [Bun 兼容层参考](/zh/reference/bun-compat-layer) — Bun API 详情
 - [Deno 兼容层参考](/zh/reference/deno-compat-layer) — Deno API 详情

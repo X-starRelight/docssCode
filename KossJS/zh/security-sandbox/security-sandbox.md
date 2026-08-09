@@ -445,7 +445,7 @@ KossSecurityError: Access denied
 
 **调试模式**：使用详细错误消息，便于排查问题。
 ```
-KossSecurityError: sandbox audit denied for fs.readFile (path: /etc/passwd)
+KossSecurityError: sandbox audit denied for fs.readFile
 ```
 
 ---

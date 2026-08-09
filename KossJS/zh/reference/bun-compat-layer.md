@@ -4,8 +4,8 @@
 
 > **版本锚定**：基于 Bun **v1.1.x** 实现  
 > **Builtin 标志**：`KOSS_BUILTIN_BUN`（`1 << 1`）  
-> **文件位置**：`src/js_shims/bun_shim.js`（160 行）  
-> **底层依赖**：委托 `koss:io`、`koss:crypto`、`koss:system` 实现
+> **文件位置**：`src/js_shims/bun_shim.js`（509 行）  
+> **底层依赖**：委托 `koss:io`、`koss:crypto`、`koss:system`、`koss:zlib`、`koss:stream`、`koss:buffer` 实现
 
 ---
 
@@ -39,14 +39,20 @@ console.log(Bun.version);  // '1.1.42'
 
 ### Bun.build
 
-**类型：** `string`  
-**值：** `'koss-bun-compat'`
+**类型：** `function`  
+**状态：** ❌ 不支持（抛出错误）
 
-返回构建标识符。
+`Bun.build` 需要打包器，KossJS 中调用会抛出错误：
 
 ```javascript
-console.log(Bun.build);  // 'koss-bun-compat'
+try {
+    Bun.build({ entrypoints: ['/app.js'] });
+} catch (e) {
+    console.log(e.message);  // Bun.build is not implemented in KossJS (no bundler)
+}
 ```
+
+> 注意：旧版文档将其描述为字符串常量 `'koss-bun-compat'`，该行为已在 v0.1.0-dev.10 修正为抛错函数。
 
 ---
 
@@ -70,7 +76,7 @@ const HOME = Bun.env.HOME;
 返回命令行参数列表（当前简化实现，返回空数组）。
 
 ```javascript
-console.log(Bun.argv);  // ['node', 'script.js', '--flag']
+console.log(Bun.argv);  // []（当前为空数组）
 ```
 
 ---
@@ -114,7 +120,7 @@ Bun.write('/tmp/data.bin', new Uint8Array([1, 2, 3]));
 | `.json()` | `any` | 解析为 JSON（同步） |
 | `.arrayBuffer()` | `ArrayBuffer` | 读取为 ArrayBuffer（同步） |
 | `.exists()` | `boolean` | 文件是否存在（同步） |
-| `.stream()` | `never` | 抛出错误（不支持） |
+| `.stream()` | `Readable` | 读取为 `koss:stream` Readable 流（v0.1.0-dev.10 实现） |
 
 ```javascript
 const file = Bun.file('/tmp/hello.txt');
@@ -135,7 +141,7 @@ console.log(file.exists());    // 是否存在
 | `options.port` | `number` | `3000` | 监听端口 |
 | `options.hostname` | `string` | `'0.0.0.0'` | 监听主机 |
 
-启动 HTTP 服务器（同步）。
+启动服务器（同步）。底层调用 `koss:io.serve({ port, hostname })` 且**未传入 handler**，因此实际创建的是 **TCP 监听器**而非 HTTP 服务器（handler 接线尚未实现，与 `Deno.serve` 不同）。
 
 **返回值：**
 
@@ -221,10 +227,10 @@ const empty = Bun.peek([]);          // undefined
 |------|------|------|
 | `cmd` | `string` | 命令名称 |
 
-查找可执行文件路径（简化实现，直接返回输入）。
+按 `PATH` 环境变量搜索可执行文件，返回第一个匹配的完整路径；找不到返回 `null`（v0.1.0-dev.10 由"直接返回输入"升级为真实 PATH 搜索）。Windows 下自动尝试 `.exe`/`.cmd`/`.bat`/`.com` 扩展名。
 
 ```javascript
-const node = Bun.which('node');
+const node = Bun.which('node');  // 例如 '/usr/local/bin/node' 或 null
 ```
 
 ---
@@ -250,11 +256,11 @@ const uuid = Bun.randomUUIDv7();
 |------|------|------|
 | `path` | `string` | 文件路径 |
 
-解析文件路径为绝对路径。
+当前为 no-op，**原样返回输入**，不进行路径解析（与 Bun 原版的相对路径解析行为不同）。
 
 ```javascript
 const resolved = Bun.resolve('/tmp/../hello.txt');
-console.log(resolved);  // '/hello.txt'
+console.log(resolved);  // '/tmp/../hello.txt'（原样返回）
 ```
 
 ---
@@ -272,6 +278,125 @@ console.log(resolved);  // '/hello.txt'
 
 ```javascript
 const hash = Bun.hash('sha256', 'hello');
+```
+
+---
+
+### Bun.CryptoHasher
+
+**类型：** `class`（v0.1.0-dev.10 新增）
+
+流式哈希器，支持 `update()` / `digest(encoding)`（`hex`/`base64`）。
+
+```javascript
+const hasher = new Bun.CryptoHasher('sha256');
+hasher.update('hello ');
+hasher.update('world');
+const hex = hasher.digest('hex');
+```
+
+---
+
+### Bun.Glob
+
+**类型：** `class`（v0.1.0-dev.10 新增）
+
+文件通配匹配，支持 `*`、`**`、`?`、`[...]` 模式。
+
+| 方法 | 说明 |
+|------|------|
+| `.match(path)` | 判断路径是否匹配模式 |
+| `.scan(options)` | 从 `options.cwd`（默认 `.`）递归扫描匹配文件 |
+
+```javascript
+const glob = new Bun.Glob('**/*.js');
+glob.match('src/main.js');       // true
+glob.scan({ cwd: './src' });     // 匹配的文件路径数组
+```
+
+---
+
+### Bun.Cookie / Bun.CookieMap
+
+**类型：** `class`（v0.1.0-dev.10 新增）
+
+`Bun.Cookie(name, value, options)` 表示单个 Cookie，`toString()` 输出 Set-Cookie 格式；`Bun.CookieMap(initial)` 解析 Cookie 头。
+
+`CookieMap` 方法：`get`/`set`/`delete`/`has`/`entries`/`size`/`[Symbol.iterator]`/`toString`。
+
+```javascript
+const map = new Bun.CookieMap('session=abc; theme=dark');
+map.get('session');   // 'abc'
+map.toString();       // 'session=abc; theme=dark'
+```
+
+---
+
+### Bun.gzipSync / gunzipSync / deflateSync / inflateSync
+
+**类型：** `function`（v0.1.0-dev.10 新增）
+
+同步压缩/解压，底层委托 `koss:zlib`。
+
+```javascript
+const compressed = Bun.gzipSync(new Uint8Array([1, 2, 3]));
+const restored = Bun.gunzipSync(compressed);
+```
+
+---
+
+### Bun.nanoseconds()
+
+**类型：** `function`（v0.1.0-dev.10 新增）
+
+返回当前时间（纳秒），基于单调时钟 `__koss_performance_now`。
+
+---
+
+### Bun.deepEquals(a, b) / Bun.deepMatch(a, b)
+
+**类型：** `function`（v0.1.0-dev.10 新增）
+
+深度相等比较（支持 `Uint8Array` 字节级比较）；`deepMatch` 仅要求 `b` 中的键在 `a` 中匹配。
+
+---
+
+### Bun.escapeHTML(input) / Bun.stringWidth(str)
+
+**类型：** `function`（v0.1.0-dev.10 新增）
+
+`escapeHTML` 转义 `&<>"'`；`stringWidth` 计算字符串显示宽度（CJK 宽字符计 2）。
+
+---
+
+### Bun.fileURLToPath(url) / Bun.pathToFileURL(path)
+
+**类型：** `function`（v0.1.0-dev.10 新增）
+
+`file:` URL 与文件路径互转（Windows 下处理盘符与反斜杠）。
+
+```javascript
+const p = Bun.fileURLToPath(new URL('file:///tmp/a.txt'));  // '/tmp/a.txt'
+const u = Bun.pathToFileURL('/tmp/a.txt');                   // URL('file:///tmp/a.txt')
+```
+
+---
+
+### Bun.concatArrayBuffers(buffers) / Bun.allocUnsafe(size)
+
+**类型：** `function`（v0.1.0-dev.10 新增）
+
+`concatArrayBuffers` 拼接多个 ArrayBuffer；`allocUnsafe` 分配指定字节数的 ArrayBuffer。
+
+---
+
+### Buffer BigInt 读写（v0.1.0-dev.10 新增）
+
+Bun shim 使用的 `koss:buffer` 新增 BigInt 读写方法：`readBigInt64LE`/`readBigInt64BE`/`readBigUInt64LE`/`readBigUInt64BE`/`writeBigInt64LE`/`writeBigInt64BE`/`writeBigUInt64LE`/`writeBigUInt64BE`。
+
+```javascript
+const buf = Buffer.from([0, 0, 0, 0, 0, 0, 0, 1]);
+buf.readBigUInt64LE();  // 1n
 ```
 
 ---
@@ -330,6 +455,9 @@ try {
 | `Bun.sql()` | `Bun.sql is not implemented in KossJS (requires SQLite)` |
 | `Bun.spawn()` | `Bun.spawn is not implemented in KossJS (requires child_process)` |
 | `Bun.build()` | `Bun.build is not implemented in KossJS (no bundler)` |
+| `Bun.malloc(size)` | `Bun malloc is not implemented in KossJS` |
+| `Bun.gc()` | `Bun.gc is not implemented in KossJS` |
+| `Bun.readable(path)` | `ReadableStream is not supported in KossJS` |
 
 ---
 

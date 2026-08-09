@@ -122,20 +122,21 @@ koss.destroy()
 ### TypeScript
 
 ```typescript
-import { KossJS, KossBuiltin } from './kossjs_interface';
+import { KossJS } from './kossjs_interface';
 
-const koss = new KossJS({
-    capabilities: 0xFFFFFFFF,
-    builtins: KossBuiltin.DENO | KossBuiltin.KOSS,
-    stable: true
-});
+const koss = new KossJS(
+    undefined,
+    true,
+    KossJS.KOSS_CAP_ALL,
+    KossJS.KOSS_BUILTIN_DENO | KossJS.KOSS_BUILTIN_KOSS
+);
 
 // 批量检查
 const flags = [
-    { name: 'Node.js', flag: KossBuiltin.NODE },
-    { name: 'Bun', flag: KossBuiltin.BUN },
-    { name: 'Deno', flag: KossBuiltin.DENO },
-    { name: 'Koss', flag: KossBuiltin.KOSS },
+    { name: 'Node.js', flag: KossJS.KOSS_BUILTIN_NODE },
+    { name: 'Bun', flag: KossJS.KOSS_BUILTIN_BUN },
+    { name: 'Deno', flag: KossJS.KOSS_BUILTIN_DENO },
+    { name: 'Koss', flag: KossJS.KOSS_BUILTIN_KOSS },
 ];
 
 for (const { name, flag } of flags) {
@@ -144,7 +145,7 @@ for (const { name, flag } of flags) {
 }
 
 // 根据状态执行不同逻辑
-if (koss.isBuiltinEnabled(KossBuiltin.DENO)) {
+if (koss.isBuiltinEnabled(KossJS.KOSS_BUILTIN_DENO)) {
     koss.eval(`
         import { readTextFile } from 'koss:deno';
         const text = await readTextFile('/tmp/test.txt');

@@ -38,7 +38,7 @@ KossJS 是一个高性能的嵌入式 JavaScript 运行时引擎，原生支持 
 
 首先，导入模块并创建实例。
 
-`python
+`````python
 from kossjs_interface import KossJS
 
 # 1. 创建实例（stable=True，生产模式）
@@ -63,14 +63,14 @@ print(result)  # 输出: Hello from Python
 
 # 5. 销毁实例
 koss.destroy()
-`
+```
 
 ### 使用 Fetch API
 
 KossJS 内置了原生 Fetch API 支持。异步代码使用 
 un_async() 执行：
 
-`python
+`````python
 from kossjs_interface import KossJS
 
 koss = KossJS()
@@ -90,11 +90,11 @@ result = koss.run_async('''
 print(result)
 
 koss.destroy()
-`
+```
 
 ### 运行 JavaScript 文件
 
-`python
+`````python
 from kossjs_interface import KossJS
 
 koss = KossJS()
@@ -108,13 +108,13 @@ result = koss.run_module("./module.mjs")
 print(result)
 
 koss.destroy()
-`
+```
 
 ### 注册 Native 函数
 
 可以将 Python 函数注册为 JavaScript 可调用的函数：
 
-`python
+`````python
 from kossjs_interface import KossJS, JsError
 
 def add(a, b):
@@ -130,11 +130,11 @@ result = koss.eval("add(10, 20)")
 print(result)  # 输出: 30
 
 koss.destroy()
-`
+```
 
 ### 使用上下文管理器
 
-`python
+`````python
 from kossjs_interface import KossJS
 
 # 使用上下文管理器自动管理资源
@@ -142,7 +142,7 @@ with KossJS() as koss:
     result = koss.eval("'Hello ' + 'World'")
     print(result)  # 输出: Hello World
 # 自动销毁
-`
+```
 
 ## KossJS 的特性
 
@@ -150,7 +150,7 @@ with KossJS() as koss:
 
 KossJS 支持通过 28 个细粒度能力位精确控制实例权限，以及三层安全机制（能力位 + 审核掩码 + 审核回调）：
 
-`python
+`````python
 from kossjs_interface import KossJS
 
 # 沙箱模式：纯计算，禁止所有 IO
@@ -167,13 +167,13 @@ with KossJS(capabilities=KossJS.KOSS_CAP_ALL_NET | KossJS.KOSS_CAP_ALL_CRYPTO) a
         return d.login;
     })();
     ''')
-`
+```
 
 ### 稳定模式（stable）
 
 stable 参数控制实例的生产就绪模式：
 
-`python
+`````python
 from kossjs_interface import KossJS
 
 # 生产模式（默认，禁用 FFI）
@@ -183,7 +183,7 @@ print(koss.is_stable)  # True
 # 开发模式（启用 FFI）
 koss_dev = KossJS(stable=False)
 print(koss_dev.is_stable)  # False
-`
+```
 
 详见 [安全与沙箱指南](/zh/security-sandbox/security-sandbox)。
 

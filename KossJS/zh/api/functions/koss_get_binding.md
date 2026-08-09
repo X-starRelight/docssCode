@@ -20,6 +20,16 @@ KossResult koss_get_binding(KossInstance* inst, const char* binding_name);
 
 查询内部 Rust 绑定模块的信息。主要用于调试和内部使用。不同模块返回的 JSON 结构因模块而异，取决于 Rust 侧的实现。
 
+## 返回码
+
+| code | 含义 |
+|------|------|
+| `0` | 成功，`value` 为绑定信息 JSON |
+| `1` | 绑定模块处理失败（`value` 为错误信息） |
+| `2` | 空指针或无效 UTF-8 输入 |
+| `3` | 能力位拒绝（`KossCapabilityError: capability denied for {binding}`） |
+| `4` | 审核配置错误（掩码≠0 但未注册回调 → `KossConfigError`）、审核拒绝（`KossSecurityError`）或 JS 层审核回调抛错 |
+
 ## 使用示例
 
 ### C

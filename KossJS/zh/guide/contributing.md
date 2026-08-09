@@ -28,7 +28,7 @@
 
 ### 前置要求
 
-- **Rust 1.70+** - 用于编译核心库
+- **Rust 1.85+** - 用于编译核心库（项目使用 `edition = "2024"`，需 Rust 1.85 及以上）
 - **Python 3.11+** - 用于开发和测试 Python 接口
 - **Git** - 用于版本控制
 - **Cargo** - Rust 包管理器
@@ -77,7 +77,7 @@ cargo build --release
 
 ## 许可证
 
-通过向 KossJS 项目贡献代码，您同意您的贡献将遵循项目的 本项目采用 [GNU AGPL v3.0](https://gnu.ac.cn/licenses/agpl-3.0.html) 协议和其附带的 TT23XR Studio 第 7 节附加权限《独立模块闭源组合例外》。
+通过向 KossJS 项目贡献代码，您同意您的贡献将遵循本项目采用的开源协议，即 [GNU AGPL v3.0](https://gnu.ac.cn/licenses/agpl-3.0.html) 及其附带的 TT23XR Studio 第 7 节附加权限《独立模块闭源组合例外》。
 
 ---
 

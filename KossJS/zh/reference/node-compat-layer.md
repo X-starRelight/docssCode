@@ -12,31 +12,35 @@
 
 | 模块 | 导入路径 | 实现 | 行数 |
 |------|----------|------|------|
-| assert | `koss:node/assert` | 委托 `koss:assert` | 8 |
-| buffer | `koss:node/buffer` | 委托 `koss:buffer` | 16 |
-| constants | `koss:node/constants` | 委托 `koss:constants` | 8 |
-| crypto | `koss:node/crypto` | 内联 JS polyfill | 203 |
-| dgram | `koss:node/dgram` | 内联 JS polyfill（TCP 桥接） | 57 |
-| diagnostics_channel | `koss:node/diagnostics_channel` | 委托 `koss:diagnostics_channel` | 8 |
-| dns | `koss:node/dns` | 内联 JS polyfill | 108 |
-| events | `koss:node/events` | 委托 `koss:events` | 13 |
-| fs | `koss:node/fs` | 委托 `koss:io` + 包装层 | 238 |
-| http | `koss:node/http` | 委托 `koss:http` | 8 |
-| https | `koss:node/https` | 委托 `koss:http` + 包装层 | 35 |
-| net | `koss:node/net` | 委托 `koss:net` | 8 |
-| os | `koss:node/os` | 委托 `koss:system` | 8 |
-| path | `koss:node/path` | 委托 `koss:path` | 8 |
-| perf_hooks | `koss:node/perf_hooks` | 内联 JS shim | 118 |
-| process | `koss:node/process` | 委托 `koss:process` | 8 |
-| querystring | `koss:node/querystring` | 委托 `koss:querystring` | 8 |
-| stream | `koss:node/stream` | 委托 `koss:stream` | 8 |
-| string_decoder | `koss:node/string_decoder` | 委托 `koss:string_decoder` | 8 |
-| timers | `koss:node/timers` | 委托 `koss:timers` | 8 |
-| tls | `koss:node/tls` | 内联 JS polyfill（基于 `koss:net`） | 46 |
-| trace_events | `koss:node/trace_events` | 委托 `koss:trace_events` | 8 |
-| url | `koss:node/url` | 委托 `koss:url` | 8 |
-| util | `koss:node/util` | 委托 `koss:util` | 8 |
-| zlib | `koss:node/zlib` | 委托 `koss:zlib` | 8 |
+| assert | `koss:node/assert` | 委托 `koss:assert` | 10 |
+| buffer | `koss:node/buffer` | 委托 `koss:buffer` | 19 |
+| console | `koss:node/console` | 返回全局 `console` 对象 | 9 |
+| constants | `koss:node/constants` | 委托 `koss:constants` | 10 |
+| crypto | `koss:node/crypto` | 内联 JS polyfill | 257 |
+| dgram | `koss:node/dgram` | 内联 JS polyfill（真实 UDP，`__koss_udp_*`） | 201 |
+| diagnostics_channel | `koss:node/diagnostics_channel` | 委托 `koss:diagnostics_channel` | 10 |
+| dns | `koss:node/dns` | 内联 JS polyfill | 160 |
+| events | `koss:node/events` | 委托 `koss:events` | 16 |
+| fs | `koss:node/fs` | 委托 `koss:io` + fd 级原生层 | 581 |
+| http | `koss:node/http` | 委托 `koss:http` | 10 |
+| https | `koss:node/https` | 显式抛 `_unsupported` | 38 |
+| net | `koss:node/net` | 委托 `koss:net` | 10 |
+| os | `koss:node/os` | 委托 `koss:os` | 10 |
+| path | `koss:node/path` | 委托 `koss:path` | 10 |
+| perf_hooks | `koss:node/perf_hooks` | 内联 JS shim（单调时钟） | 227 |
+| process | `koss:node/process` | 委托 `koss:process` | 10 |
+| querystring | `koss:node/querystring` | 委托 `koss:querystring` | 10 |
+| stream | `koss:node/stream` | 委托 `koss:stream` | 10 |
+| stream/consumers | `koss:node/stream/consumers` | 内联 JS polyfill | 90 |
+| stream/promises | `koss:node/stream/promises` | 内联 JS polyfill | 52 |
+| string_decoder | `koss:node/string_decoder` | 委托 `koss:string_decoder` | 10 |
+| timers | `koss:node/timers` | 委托 `koss:timers` | 10 |
+| timers/promises | `koss:node/timers/promises` | 内联 JS polyfill | 123 |
+| tls | `koss:node/tls` | 显式抛 `_unsupported` | 43 |
+| trace_events | `koss:node/trace_events` | 委托 `koss:trace_events` | 10 |
+| url | `koss:node/url` | 委托 `koss:url` | 10 |
+| util | `koss:node/util` | 委托 `koss:util` | 10 |
+| zlib | `koss:node/zlib` | 委托 `koss:zlib` | 10 |
 
 ---
 
@@ -86,10 +90,20 @@
 | `watch(filename, options, listener)` | `function` | 文件监控 |
 | `watchFile(filename, options, listener)` | `function` | 文件监控（轮询） |
 | `unwatchFile(filename, listener)` | `function` | 取消文件监控 |
-| `createReadStream(path, options)` | `function` | 创建可读流 |
-| `createWriteStream(path, options)` | `function` | 创建可写流 |
+| `createReadStream(path, options)` | `function` | 创建可读流（基于 fd 级读写） |
+| `createWriteStream(path, options)` | `function` | 创建可写流（基于 fd 级读写） |
+| `openSync(path, flags, mode)` | `function` | 打开文件返回文件描述符（fd） |
+| `closeSync(fd)` | `function` | 关闭文件描述符 |
+| `readSync(fd, buffer, offset, length, position)` | `function` | 从 fd 读取数据 |
+| `writeSync(fd, buffer, offset, length, position)` | `function` | 向 fd 写入数据 |
+| `fsyncSync(fd)` | `function` | 同步 fd 到磁盘 |
+| `ftruncateSync(fd, len)` | `function` | 截断 fd 指向的文件 |
+| `open(path, flags, mode, callback)` | `function` | 异步打开文件 |
+| `close(fd, callback)` | `function` | 异步关闭 fd |
+| `Stats` | `class` | 文件状态类（isFile/isDirectory 等） |
+| `Dirent` | `class` | 目录项类（withFileTypes 时返回） |
 
-**未实现：** `openSync`, `closeSync`, `readSync`, `writeSync`, `ftruncateSync`, `fsyncSync`
+> **fd 级 API 说明：** `openSync` 等底层使用 `__koss_fd_open/read/write/close/sync/truncate/fstat` 原生函数（v0.1.0-dev.10 新增），按 fd 维护 per-instance 打开文件表。`fs.promises` 另含 `open`、`close`、`mkdtemp`。
 
 ---
 
@@ -153,9 +167,10 @@
 | `EventEmitter.defaultMaxListeners` | `number` | 默认最大监听器数 |
 | `EventEmitter.listenerCount(emitter, event)` | `function` | 监听器计数 |
 | `EventEmitter.getEventListeners(emitter, event)` | `function` | 获取监听器列表 |
-| `EventEmitter.getMaxListeners(emitter)` | `function` | 获取最大监听器数 |
-| `EventEmitter.once(emitter, event, options)` | `function` | 一次性监听 |
-| `EventEmitter.errorMonitor` | `symbol` | 错误监控符号 |
+| `EventEmitter.once(emitter, event, options)` | `function` | 一次性监听（Promise 版本） |
+| `once(emitter, name)` | `function` | 事件转 Promise |
+| `on(emitter, event)` | `function` | 事件异步迭代器 |
+| `getEventListeners(emitterOrTarget, event)` | `function` | 获取监听器列表 |
 
 ---
 
@@ -188,10 +203,12 @@
 | `Server` | `class` | HTTP 服务器类 |
 | `IncomingMessage` | `class` | HTTP 请求消息类 |
 | `ServerResponse` | `class` | HTTP 响应消息类 |
-| `METHODS` | `string[]` | 支持的 HTTP 方法列表 |
 | `STATUS_CODES` | `object` | HTTP 状态码映射 |
-| `maxHeaderSize` | `number` | 最大请求头大小 |
 | `globalAgent` | `object` | 全局 HTTP Agent |
+| `ClientRequest` | `class` | 客户端请求类 |
+| `Agent` | `class` | HTTP Agent 类 |
+
+> 服务端与客户端均已实现：`request`/`get`/`ClientRequest`/`Agent` 提供完整 HTTP 客户端能力。
 
 ---
 
@@ -205,8 +222,10 @@
 | `request(options, callback)` | `function` | HTTPS 客户端请求 |
 | `get(url, options, callback)` | `function` | HTTPS GET 请求 |
 | `Server` | `class` | HTTPS 服务器类 |
+| `TLSSocket` | `class` | TLS Socket 类 |
+| `globalAgent` | `object` | 全局 HTTPS Agent |
 
-> 注意：HTTPS 模块基于 `http` + `net` 封装，**无实际 TLS 加密**。
+> 注意：KossJS 未实现真实 TLS。`https` 模块所有入口（`createServer`/`request`/`get`/`Server`/`TLSSocket`）均显式抛出 `_unsupported` 错误，**不会静默降级为明文 HTTP**（v0.1.0-dev.10 行为）。
 
 ---
 
@@ -218,17 +237,29 @@
 |-----|------|------|
 | `randomBytes(size, callback)` | `function` | 生成随机字节 |
 | `randomUUID(options)` | `function` | 生成 UUID v4 |
-| `createHash(algorithm)` | `function` | 创建哈希对象 |
+| `createHash(algorithm)` | `function` | 创建哈希对象（sha1/sha256/sha384/sha512/md5） |
 | `createHmac(algorithm, key)` | `function` | 创建 HMAC 对象 |
 | `randomFill(buffer, offset, size, callback)` | `function` | 随机填充 Buffer |
 | `randomFillSync(buffer, offset, size)` | `function` | 同步随机填充 |
 | `timingSafeEqual(a, b)` | `function` | 安全比较 |
 | `getHashes()` | `function` | 获取支持的哈希算法 |
-| `getCiphers()` | `function` | 获取支持的加密算法 |
-| `Hash` | `class` | 哈希计算类 |
-| `Hmac` | `class` | HMAC 计算类 |
+| `getCiphers()` | `function` | 获取支持的加密算法（aes-\*-gcm） |
+| `getCurves()` | `function` | 获取支持的曲线（ed25519） |
+| `createCipheriv(algorithm, key, iv)` | `function` | AES-GCM 流式加密（update/final/getAuthTag/setAAD） |
+| `createDecipheriv(algorithm, key, iv)` | `function` | AES-GCM 流式解密（update/final/setAuthTag/setAAD） |
+| `generateKeyPairSync(type, options)` | `function` | 生成密钥对（仅 ed25519） |
+| `sign(algorithm, data, key)` | `function` | ed25519 签名 |
+| `verify(algorithm, data, key, signature)` | `function` | ed25519 验签 |
+| `pbkdf2(password, salt, iterations, keylen, digest, callback)` | `function` | PBKDF2 异步派生 |
+| `pbkdf2Sync(password, salt, iterations, keylen, digest)` | `function` | PBKDF2 同步派生 |
+| `webcrypto` | `object` | 全局 `crypto` 引用 |
+| `subtle` | `object` | 全局 `crypto.subtle` 引用 |
 
-**支持的算法：** `sha1`, `sha256`, `sha384`, `sha512`, `md5`
+**支持的哈希算法：** `sha1`, `sha256`, `sha384`, `sha512`, `md5`
+
+**支持的加密算法（AES-GCM，v0.1.0-dev.10 新增）：** `aes-128-gcm`, `aes-192-gcm`, `aes-256-gcm`（IV 需 12 字节）
+
+> `createHash`/`createHmac` 返回普通对象（含 `update`/`digest` 方法），`Hash`/`Hmac` 类本身不导出。
 
 ---
 
@@ -244,11 +275,38 @@
 | `Transform` | `class` | 转换流 |
 | `PassThrough` | `class` | 直通流 |
 | `pipeline(...streams, callback)` | `function` | 流管道传输 |
+| `compose(...streams)` | `function` | 组合流 |
 | `finished(stream, options, callback)` | `function` | 流完成事件 |
 | `addAbortSignal(signal, stream)` | `function` | 添加中止信号 |
 | `isDisturbed(stream)` | `function` | 判断流是否被消费 |
 | `isDestroyed(stream)` | `function` | 判断流是否已销毁 |
 | `Stream` | `class` | 流基类（`EventEmitter`） |
+
+---
+
+### koss:node/stream/promises — 流 Promise 接口
+
+**导入：** `require('koss:node/stream/promises')`
+
+| API | 类型 | 说明 |
+|-----|------|------|
+| `pipeline(...streams)` | `function` | Promise 版管道传输 |
+| `finished(stream, options)` | `function` | Promise 版流完成 |
+| `rejectWithError(promise, err)` | `function` | 统一错误拒绝 |
+
+---
+
+### koss:node/stream/consumers — 流消费工具
+
+**导入：** `require('koss:node/stream/consumers')`
+
+| API | 类型 | 说明 |
+|-----|------|------|
+| `json(stream)` | `function` | 收集流并解析 JSON |
+| `text(stream)` | `function` | 收集流为字符串 |
+| `buffer(stream)` | `function` | 收集流为 Buffer |
+| `arrayBuffer(stream)` | `function` | 收集流为 ArrayBuffer |
+| `blob(stream, mimeType)` | `function` | 收集流为 Blob |
 
 ---
 
@@ -274,7 +332,11 @@
 | `uptime()` | `function` | 系统运行时间 |
 | `userInfo(options)` | `function` | 用户信息 |
 | `networkInterfaces()` | `function` | 网络接口信息 |
-| `constants` | `object` | 系统常量 |
+| `availableParallelism()` | `function` | 可用并行度 |
+| `version()` | `function` | 进程版本号 |
+| `machine()` | `function` | CPU 架构标识 |
+| `devNull` | `string` | 空设备路径（win32: `nul`） |
+| `constants` | `object` | 系统常量（signals/errno 表） |
 
 ---
 
@@ -397,6 +459,36 @@
 | `active(timer)` | `function` | 激活定时器 |
 | `unenroll(timer)` | `function` | 取消注册 |
 | `enroll(timer, delay)` | `function` | 注册定时器 |
+| `clearAllTimers()` | `function` | 清除全部定时器 |
+| `Timeout` | `class` | 定时器句柄（ref/unref/hasRef/refresh） |
+| `promises` | `object` | Promise 版本（setTimeout/setImmediate/setInterval 异步迭代器） |
+
+---
+
+### koss:node/timers/promises — 定时器 Promise 接口
+
+**导入：** `require('koss:node/timers/promises')`
+
+| API | 类型 | 说明 |
+|-----|------|------|
+| `setTimeout(delay, value, options)` | `function` | Promise 版 setTimeout（支持 AbortSignal） |
+| `setImmediate(value, options)` | `function` | Promise 版 setImmediate |
+| `setInterval(delay, value, options)` | `function` | 异步迭代器版 setInterval |
+| `scheduler.wait(delay, options)` | `function` | 等待指定时长 |
+| `scheduler.yield()` | `function` | 让出事件循环 |
+| `scheduler.signal(signal)` | `function` | 等待信号中止 |
+
+---
+
+### koss:node/console — 控制台
+
+**导入：** `require('koss:node/console')`
+
+| API | 类型 | 说明 |
+|-----|------|------|
+| `console` | `object` | 全局 `console` 对象（log/info/warn/error/debug/table 等） |
+
+> 与 Node 一致，`console` 既是全局对象也是模块导出，本模块直接返回 `globalThis.console`。
 
 ---
 
@@ -416,13 +508,19 @@
 
 | API | 类型 | 说明 |
 |-----|------|------|
-| `lookup(hostname, options, callback)` | `function` | DNS 查找 |
-| `resolve(hostname, rrtype, callback)` | `function` | DNS 解析 |
+| `lookup(hostname, options, callback)` | `function` | DNS 查找（支持 `family: 4/6` 过滤与 `all: true`） |
+| `resolve(hostname, rrtype, callback)` | `function` | DNS 解析（A/AAAA 记录过滤） |
 | `resolve4(hostname, options, callback)` | `function` | IPv4 解析 |
 | `resolve6(hostname, options, callback)` | `function` | IPv6 解析 |
-| `lookupService(address, port, callback)` | `function` | 反向 DNS 查找（stub） |
+| `lookupService(address, port, callback)` | `function` | 反向 DNS 查找（`__koss_dns_lookup_service`，getnameinfo） |
+| `isIP(input)` | `function` | 判断是否为 IP 地址（返回 4/6/0） |
+| `isIPv4(input)` | `function` | 判断是否为 IPv4 |
+| `isIPv6(input)` | `function` | 判断是否为 IPv6 |
 | `promises.lookup(hostname, options)` | `function` | Promise DNS 查找 |
 | `promises.resolve(hostname, rrtype)` | `function` | Promise DNS 解析 |
+| `promises.resolve4(hostname, options)` | `function` | Promise IPv4 解析 |
+| `promises.resolve6(hostname, options)` | `function` | Promise IPv6 解析 |
+| `promises.lookupService(address, port)` | `function` | Promise 反向 DNS 查找 |
 
 ---
 
@@ -432,10 +530,10 @@
 
 | API | 类型 | 说明 |
 |-----|------|------|
-| `createSocket(type, callback)` | `function` | 创建 UDP Socket |
+| `createSocket(type, callback)` | `function` | 创建 UDP Socket（`udp4`/`udp6`） |
 | `Socket` | `class` | UDP Socket 类 |
 
-> 注意：基于 TCP 桥接实现，**非真实 UDP**。
+> 基于 `__koss_udp_create/bind/send/recv/close/address` 原生函数实现**真实 UDP 收发**（Windows 下走 WinSock2），非 TCP 桥接（v0.1.0-dev.10 新增）。Socket 支持 `bind`/`send`/`close`/`address` 与 `message` 事件；`setBroadcast`/`setTTL`/`addMembership` 等为无操作兼容。
 
 ---
 
@@ -445,13 +543,14 @@
 
 | API | 类型 | 说明 |
 |-----|------|------|
-| `connect(options, connectListener)` | `function` | TLS 连接 |
-| `createServer(options, connectionListener)` | `function` | TLS 服务器 |
-| `TLSSocket` | `class` | TLS Socket 类 |
-| `createSecureContext(options)` | `function` | 创建安全上下文 |
-| `checkServerIdentity(hostname, cert)` | `function` | 检查服务器身份 |
+| `connect(options, connectListener)` | `function` | TLS 连接（抛错） |
+| `createServer(options, connectionListener)` | `function` | TLS 服务器（抛错） |
+| `TLSSocket` | `class` | TLS Socket 类（抛错） |
+| `createSecureContext(options)` | `function` | 创建安全上下文（抛错） |
+| `checkServerIdentity(hostname, cert)` | `function` | 检查服务器身份（抛错） |
+| `rootCertificates` | `string[]` | 根证书列表（空数组） |
 
-> 注意：基于 `net` 模块轻量封装，**无实际 TLS 加密**。
+> 注意：KossJS 未实现真实 TLS 握手与证书验证。为避免调用方误以为连接已加密（安全隐患），**所有 TLS 操作显式抛 `_unsupported` 错误**（v0.1.0-dev.10 行为），不再静默返回 stub。
 
 ---
 
@@ -496,7 +595,8 @@
 
 | API | 类型 | 说明 |
 |-----|------|------|
-| `performance.now()` | `function` | 当前时间（毫秒） |
+| `performance.now()` | `function` | 当前时间（单调时钟，毫秒） |
+| `performance.timeOrigin` | `number` | 性能时间原点 |
 | `performance.mark(name)` | `function` | 标记时间点 |
 | `performance.measure(name, startMark, endMark)` | `function` | 测量耗时 |
 | `performance.getEntries()` | `function` | 获取所有性能条目 |
@@ -504,13 +604,20 @@
 | `performance.getEntriesByName(name)` | `function` | 按名称获取条目 |
 | `performance.clearMarks(name)` | `function` | 清除标记 |
 | `performance.clearMeasures(name)` | `function` | 清除测量 |
+| `performance.eventLoopUtilization()` | `function` | 事件循环利用率 |
+| `performance.nodeTiming` | `object` | Node 阶段计时对象 |
+| `performance.timing` | `object` | 计时对象 |
 | `PerformanceObserver` | `class` | 性能观察者 |
 | `PerformanceMark` | `class` | 性能标记 |
 | `PerformanceMeasure` | `class` | 性能测量 |
 | `PerformanceEntry` | `class` | 性能条目 |
-| `createHistogram(options)` | `function` | 创建直方图 |
+| `createHistogram(options)` | `function` | 创建真实直方图（对数分桶） |
+| `Histogram` | `class` | 直方图类（record/reset/min/max/mean/stddev/percentile/percentiles） |
 | `timerify(fn, options)` | `function` | 包装为计时函数 |
-| `monitorEventLoopDelay(options)` | `function` | 监控事件循环延迟（stub） |
+| `monitorEventLoopDelay(options)` | `function` | 监控事件循环延迟（真实采样直方图） |
+| `constants` | `object` | 性能常量（`NODE_PERFORMANCE_*`） |
+
+> `performance.now()` 使用单调时钟（`__koss_performance_now`），不受系统时间调整影响；`monitorEventLoopDelay` 基于间隔采样返回真实 `Histogram`（v0.1.0-dev.10 由 stub 升级为真实实现）。
 
 ---
 
@@ -583,13 +690,10 @@ fs.promises.readFile('/tmp/test.txt', 'utf8')
 
 | 模块 | 限制 |
 |------|------|
-| **http** | 仅服务端，客户端未完全实现 |
-| **https/tls** | 无实际 TLS 加密 |
-| **dgram** | 基于 TCP 桥接，非真实 UDP |
+| **https/tls** | 未实现真实 TLS，显式抛 `_unsupported` 错误 |
 | **zlib** | 异步函数实际为同步实现 |
-| **stream** | `compose()`/`addAbortSignal()` 未实现 |
-| **perf_hooks** | `monitorEventLoopDelay()` 为 stub |
-| **dns** | `lookupService()` 为 stub |
+| **dgram** | 多播/广播选项为 no-op 兼容（收发为真实 UDP） |
+| **dns** | `resolve` 的 MX/TXT/NS/CNAME 等记录类型返回原解析结果（未按类型过滤） |
 
 ---
 

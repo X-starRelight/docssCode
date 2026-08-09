@@ -115,20 +115,21 @@ koss.destroy()
 ### TypeScript
 
 ```typescript
-import { KossJS, KossBuiltin } from './kossjs_interface';
+import { KossJS } from './kossjs_interface';
 
-const koss = new KossJS({
-    capabilities: 0xFFFFFFFF,
-    builtins: KossBuiltin.ALL,
-    stable: true
-});
+const koss = new KossJS(
+    undefined,
+    true,
+    KossJS.KOSS_CAP_ALL,
+    KossJS.KOSS_BUILTIN_ALL
+);
 
 const builtins = koss.getBuiltins();
 console.log(`Builtins: 0x${builtins.toString(16)}`);
 
 // 使用位运算检查
-const hasNode = (builtins & KossBuiltin.NODE) !== 0;
-const hasBun = (builtins & KossBuiltin.BUN) !== 0;
+const hasNode = (builtins & KossJS.KOSS_BUILTIN_NODE) !== 0;
+const hasBun = (builtins & KossJS.KOSS_BUILTIN_BUN) !== 0;
 
 console.log(`Node: ${hasNode}, Bun: ${hasBun}`);
 

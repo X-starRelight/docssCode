@@ -58,14 +58,14 @@ KossJS 为嵌入式场景优化设计：
 
 | 模块 | 说明 |
 |------|------|
-| crypto | 加密（randomBytes, createHash, randomUUID） |
-| dns | DNS 解析（lookup, resolve） |
-| http | HTTP 服务器（仅服务端） |
-| https | HTTPS 封装 |
+| crypto | 加密（randomBytes, createHash, createHmac, AES-GCM, Ed25519, pbkdf2） |
+| dns | DNS 解析（lookup, resolve, lookupService, isIP） |
+| http | HTTP 服务器与客户端 |
+| https | HTTPS（未实现 TLS，显式抛错） |
 | net | TCP 网络 |
 | stream | 流处理 |
-| tls | TLS 封装（无实际加密） |
-| dgram | UDP 封装（基于 TCP 桥接） |
+| tls | TLS（未实现，显式抛错） |
+| dgram | UDP 数据报（真实 UDP 收发） |
 | zlib | 压缩（gzip/deflate） |
 
 #### 纯 JS Shim（基础功能可用）
@@ -73,7 +73,7 @@ KossJS 为嵌入式场景优化设计：
 | 模块 | 说明 |
 |------|------|
 | util | 工具函数 |
-| perf_hooks | 性能钩子 |
+| perf_hooks | 性能钩子（单调时钟 + 直方图） |
 | trace_events | 跟踪事件 |
 | diagnostics_channel | 诊断通道 |
 
@@ -89,11 +89,12 @@ KossJS 编译为平台原生的动态链接库：
 
 | 平台 | 文件名 | 架构 |
 |------|--------|------|
-| Windows | ***kossjs.dll*** | x64 |
-| Linux | ***kossjs.so*** | x64, ARM64 |
-| macOS | ***kossjs.dylib*** | x64, ARM64 |
-| Android | ***kossjs_android*.so*** | x86_64, ARM64, ARMv7 |
-| HarmonyOS | ***kossjs_harmony*.so*** | x86_64, ARM64 |
+| Windows | ***kossjs.dll*** | x86_64, i686, aarch64 |
+| Linux | ***kossjs.so*** | x86_64, aarch64 |
+| macOS | ***kossjs.dylib*** | x86_64, aarch64 |
+| Android | ***kossjs_android*.so*** | aarch64, armv7, x86_64 |
+| iOS | ***kossjs_ios*.dylib*** | aarch64（设备 + 模拟器） |
+| HarmonyOS | ***kossjs_harmony*.so*** | aarch64, x86_64 |
 
 ## 技术架构
 
@@ -201,8 +202,8 @@ KossJS 是一个专业级的嵌入式 JavaScript 解决方案：
 
 **下一步**:
 - [快速开始](/zh/guide/getting-started) - 立即开始使用 KossJS
-- [Node.js 内置库支持](/zh/reference/nodejs-stdlib-support) - 查看完整的模块支持状态
+- [标准库支持状态](/zh/reference/stdlib-support) - 查看完整的模块支持状态
 - [stable 模式替代方案](/zh/reference/stable-alternatives) - FFI 被禁用时的替代实现
 - [API 详解](/zh/api/API-overview) - 了解所有可用功能
 - [Python 接口使用](/zh/interface/py/how-to-use) - Python 开发指南
-- [C/C++ 接口使用](/zh/interface/c_cpp_csharp/how-to-use) - C/C++ 开发指南
+- [TypeScript 接口使用](/zh/interface/ts/how-to-use) - TypeScript 开发指南

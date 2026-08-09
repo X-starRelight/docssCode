@@ -46,7 +46,7 @@ typedef enum {
 
 | 标志位 | 值 | 控制模块 | 说明 |
 |--------|-----|----------|------|
-| `KOSS_BUILTIN_NODE` | `1 << 0` | `koss:node/*` | 25 个 Node.js 兼容模块 |
+| `KOSS_BUILTIN_NODE` | `1 << 0` | `koss:node/*` | 29 个 Node.js 兼容模块 |
 | `KOSS_BUILTIN_BUN` | `1 << 1` | `koss:bun` | Bun v1.1.x 兼容层 |
 | `KOSS_BUILTIN_DENO` | `1 << 2` | `koss:deno` | Deno v2.0.x 兼容层 |
 | `KOSS_BUILTIN_KOSS` | `1 << 3` | `koss:io/crypto/system/data/ffi` 等 | Koss 原生模块（23 个 koss 标准库模块） |
@@ -175,17 +175,18 @@ koss.destroy()
 ### TypeScript
 
 ```typescript
-import { KossJS, KossBuiltin } from './kossjs_interface';
+import { KossJS } from './kossjs_interface';
 
-// 全部启用
-const koss = new KossJS({
-    capabilities: 0xFFFFFFFF,
-    builtins: KossBuiltin.ALL,
-    stable: true
-});
+// 全部启用（位置参数：libPath?, stable?, caps?, builtins?）
+const koss = new KossJS(
+    undefined,
+    true,
+    KossJS.KOSS_CAP_ALL,
+    KossJS.KOSS_BUILTIN_ALL
+);
 
 console.log(`Builtins: ${koss.getBuiltins().toString(16)}`);
-console.log(`Bun enabled: ${koss.isBuiltinEnabled(KossBuiltin.BUN)}`);
+console.log(`Bun enabled: ${koss.isBuiltinEnabled(KossJS.KOSS_BUILTIN_BUN)}`);
 
 koss.eval(`
     import fs from 'koss:node/fs';

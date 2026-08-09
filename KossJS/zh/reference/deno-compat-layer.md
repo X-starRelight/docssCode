@@ -4,7 +4,7 @@
 
 > **版本锚定**：基于 Deno **v2.0.x** 实现  
 > **Builtin 标志**：`KOSS_BUILTIN_DENO`（`1 << 2`）  
-> **文件位置**：`src/js_shims/deno_shim.js`（240 行）  
+> **文件位置**：`src/js_shims/deno_shim.js`（417 行）  
 > **底层依赖**：委托 `koss:io`、`koss:crypto`、`koss:system` 实现
 
 ---
@@ -63,10 +63,30 @@ const PATH = Deno.env.PATH;
 
 **类型：** `string[]`
 
-命令行参数列表（`process.argv` 的切片，从第 2 个参数开始）。
+命令行参数列表（当前简化实现，返回空数组）。
 
 ```javascript
-console.log(Deno.args);  // ['--flag', 'input.txt']
+console.log(Deno.args);  // []（当前为空数组）
+```
+
+---
+
+#### Deno.Env
+
+**类型：** `object`（v0.1.0-dev.10 新增）
+
+环境变量操作对象，底层使用 `koss:system`。
+
+| 方法 | 说明 |
+|------|------|
+| `Env.get(key)` | 读取环境变量 |
+| `Env.set(key, value)` | 设置环境变量 |
+| `Env.delete(key)` | 删除环境变量 |
+| `Env.toObject()` | 导出全部环境变量为对象 |
+
+```javascript
+Deno.Env.set('FOO', 'bar');
+console.log(Deno.Env.get('FOO'));
 ```
 
 ---
@@ -203,9 +223,67 @@ const info = Deno.lstat('/tmp/link.txt');
 
 创建目录。
 
+> **跨平台行为（v0.1.0-dev.10）：** 若目录已存在，静默成功、不抛错（自动容忍 `already exists`、`os error 183`（Windows）、`os error 17`（POSIX）错误），与各平台原生行为一致。
+
 ```javascript
 Deno.mkdir('/tmp/newdir');
 Deno.mkdir('/tmp/a/b/c', { recursive: true });
+Deno.mkdir('/tmp/newdir');  // 已存在 → 静默成功
+```
+
+---
+
+#### Deno.readTextFileSync(path) / readFileSync(path)
+
+**类型：** `function`（v0.1.0-dev.10 新增）
+
+同步读取文本/二进制文件。
+
+```javascript
+const text = Deno.readTextFileSync('/tmp/hello.txt');
+const bytes = Deno.readFileSync('/tmp/data.bin');
+```
+
+---
+
+#### Deno.writeTextFileSync(path, data) / writeFileSync(path, data)
+
+**类型：** `function`（v0.1.0-dev.10 新增）
+
+同步写入文本/二进制文件。
+
+```javascript
+Deno.writeTextFileSync('/tmp/output.txt', 'Hello Deno!');
+Deno.writeFileSync('/tmp/output.bin', new Uint8Array([1, 2, 3]));
+```
+
+---
+
+#### Deno.mkdirSync(path, options) / removeSync(path, options) / renameSync(old, new)
+
+**类型：** `function`（v0.1.0-dev.10 新增）
+
+同步创建/删除/重命名。`mkdirSync` 与 `Deno.mkdir` 一样对"已存在"静默成功。
+
+---
+
+#### Deno.statSync(path) / lstatSync(path) / realPathSync(path)
+
+**类型：** `function`（v0.1.0-dev.10 新增）
+
+同步状态/链接状态/真实路径。
+
+---
+
+#### Deno.cwdSync() / chdirSync(path) / copyFileSync(from, to) / existsSync(path)
+
+**类型：** `function`（v0.1.0-dev.10 新增）
+
+同步工作目录 / 复制文件（真实实现）/ 判断存在。
+
+```javascript
+const exists = Deno.existsSync('/tmp/a.txt');   // true / false
+Deno.copyFileSync('/tmp/a.txt', '/tmp/b.txt');
 ```
 
 ---
@@ -315,6 +393,45 @@ console.log(mem);  // { rss, heapTotal, heapUsed, external }
 
 ---
 
+#### Deno.open(path, options) / Deno.FsFile
+
+**类型：** `function` / `class`（v0.1.0-dev.10 新增）
+
+打开文件返回 `Promise<FsFile>`。`FsFile` 提供 `rid`/`path` 属性与异步方法：`read`/`write`/`close`/`seek`/`stat`，并支持 `Symbol.asyncDispose`。
+
+```javascript
+const file = await Deno.open('/tmp/data.bin', { read: true });
+const n = await file.read(buffer);
+await file.close();
+```
+
+---
+
+#### Deno.readAll(file) / Deno.writeAll(file, data)
+
+**类型：** `function`（v0.1.0-dev.10 新增）
+
+读取 FsFile 全部内容为 `Uint8Array` / 向 FsFile 写入数据。
+
+```javascript
+const file = await Deno.open('/tmp/data.bin', { read: true });
+const bytes = await Deno.readAll(file);
+```
+
+---
+
+#### Deno.kill(pid, signal)
+
+**类型：** `function`（v0.1.0-dev.10 新增）
+
+向进程发送信号（底层委托 `koss:system.kill`）。
+
+```javascript
+Deno.kill(12345, Deno.signals.SIGTERM);  // 15
+```
+
+---
+
 ### 网络 API
 
 #### Deno.serve(handler, options)
@@ -323,11 +440,11 @@ console.log(mem);  // { rss, heapTotal, heapUsed, external }
 **参数：**
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| `handler` | `function` | — | 请求处理函数（未使用） |
+| `handler` | `function` | — | 请求处理函数（v0.1.0-dev.10 起接线到完整 `koss:http` 服务端） |
 | `options.port` | `number` | `8000` | 监听端口 |
 | `options.hostname` | `string` | `'0.0.0.0'` | 监听主机 |
 
-启动 HTTP 服务器。
+启动 HTTP 服务器。handler 返回 `Response`，由完整 `koss:http` 服务端调用。
 
 **返回值：**
 
@@ -336,6 +453,7 @@ console.log(mem);  // { rss, heapTotal, heapUsed, external }
 | `.port` | `number` | 监听端口 |
 | `.hostname` | `string` | 监听主机 |
 | `.close()` | `function` | 关闭服务器 |
+| `.shutdown()` | `function` | 关闭服务器（返回 Promise） |
 
 ```javascript
 const server = Deno.serve((req) => new Response('Hello'), { port: 8080 });
@@ -549,6 +667,7 @@ console.log(Deno.signals.SIGKILL);  // 9
 | `Deno.run()` | `Deno.run is not implemented in KossJS` |
 | `Deno.spawn()` | `Deno.spawn is not implemented in KossJS` |
 | `Deno.permissions()` | `Deno.permissions is not implemented in KossJS (use Capability bits)` |
+| `Deno.symlinkSync()` | `Deno.symlinkSync is not implemented in KossJS` |
 
 ---
 

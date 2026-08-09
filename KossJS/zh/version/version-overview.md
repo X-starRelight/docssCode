@@ -84,5 +84,5 @@ KossJS 的版本号**必须**遵循以下格式：
 | 0.1.0-dev.6 | 2026/06 | Senri FFI 子系统、N-API 兼容层、Buffer 全局对象、process.dlopen、事件循环扩展、GPL 许可证输出 |
 | 0.1.0-dev.7 | 2026/06 | 28 位细粒度能力位系统、沙箱安全三层机制（能力位 + 审核掩码 + 审核回调）、审核调试模式、FFI 沙箱测试、跨平台编译修复（iOS/Android/鸿蒙/Linux aarch64）、内存管理修复 |
 | 0.1.0-dev.8 | 2026/06 | stable 模式（FFI/Worker 隔离）、koss_is_stable()、TypeScript 接口封装、Python 接口新增 get_capabilities()/is_stable、worker_threads 模块拦截、C ABI stable 感知错误消息、Node.js 内置库简化重构（移除官方源码依赖，zlib 压缩支持，TCP Socket 持久化） |
-| 0.1.0-dev.9 | 2026/06 | Node.js 内置库实现简化（移除 Node.js 官方源码依赖）、zlib 压缩支持（flate2 crate）、TCP Socket 持久化、7 个新测试文件、代码量减少约 10 万行 |
-| 0.1.0-dev.10 | 2026/08 | 移除 Worker 线程池（含 KOSS_CAP_WORKER、koss:worker）、默认构造器改为 KOSS_CAP_SANDBOX、审核强化（KossConfigError + JS 层审核回调两级审核链）、审核回调 pwd 改为模块目录、Node 内置模块 shim 扩充、全平台 shim 迁移 |
+| 0.1.0-dev.9 | 2026/07 | Node.js 内置库实现简化（移除 Node.js 官方源码依赖）、zlib 压缩支持（flate2 crate）、TCP Socket 持久化、7 个新测试文件、代码量减少约 10 万行 |
+| 0.1.0-dev.10 | 2026/08 | 移除 Worker 线程池（含 KOSS_CAP_WORKER、koss:worker）、默认构造器改为 KOSS_CAP_SANDBOX、审核强化（KossConfigError + JS 层审核回调两级审核链）、审核回调 pwd 改为模块目录、Node 内置模块 shim 扩充、全平台 shim 迁移、补齐 fd 级文件系统/UDP/DNS/性能原生层、新增 Web API 全局引导（web_api.js）、新增内置模块 timers/promises、stream/promises、stream/consumers、console、node:fs fd 级 API 与 Stats/Dirent、koss:crypto ed25519KeyPair 与 AES-GCM 流式加解密、tls/https 改为显式抛错 |

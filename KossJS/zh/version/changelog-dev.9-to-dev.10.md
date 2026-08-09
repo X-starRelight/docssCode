@@ -188,6 +188,38 @@ ESM `import` 支持 `koss:/*` 协议模块，并补全 Rust 单元测试（提�
 
 Cargo.toml / `src/version.rs`：`0.1.0-dev.9` → `0.1.0-dev.10`
 
+#### 8. 补齐 fd 级文件系统 / UDP / DNS / 性能原生层（提交 b69ec1c）
+
+**原生能力层：**
+
+| 能力 | 说明 |
+|------|------|
+| fd 级文件系统 | per-instance fd 表：`__koss_fd_open/read/write/close/sync/truncate/fstat` + `__koss_fs_append`，驱动 `node:fs` 的 fd 级 API 与流式读写 |
+| 真实 UDP | `__koss_udp_create/bind/send/recv/close/address`，驱动 `node:dgram` 真实收发（Windows 走 WinSock2，`winapi` 新增 winsock2/ws2tcpip） |
+| DNS | `__koss_dns_lookup`、`__koss_dns_lookup_service`（getnameinfo 反向解析），驱动 `node:dns` 的 lookupService / lookup family 过滤 / reverse lookup |
+| 性能时钟 | `__koss_performance_now` / `__koss_performance_timeorigin`（单调时钟），驱动 `node:perf_hooks` 的 `performance.now`、`Histogram`、`monitorEventLoopDelay` |
+
+**兼容层：**
+
+| 能力 | 说明 |
+|------|------|
+| Web API 全局引导 | 新增 `web_api.js`（1532 行）：`self` / `queueMicrotask` / `structuredClone` / `URL` / `URLPattern` / `AbortController` / `Event` 族 / `EventTarget` / `DOMException` / `FormData` / `File` / `Request` / `Response` / `fetch` / `navigator` / `reportError` / `crypto` / `ReadableStream` 族 / `CompressionStream` / `MessageChannel` / `BroadcastChannel` / `Storage` 等安装到 `globalThis` |
+| 新内置模块 | `node/timers/promises`、`node/stream/promises`、`node/stream/consumers`、`node/console`（`koss:node/*` 总数 25 → 29） |
+| `node:fs` | 新增 `openSync` / `closeSync` / `readSync` / `writeSync` / `fsyncSync` / `ftruncateSync`（fd 级）、异步 `open`/`close`、`Stats` / `Dirent` 类、`createReadStream` / `createWriteStream`（基于 fd 读写）与 `watch` |
+| `koss:crypto` | 新增 `ed25519KeyPair`、`createCipher` / `createDecipher`、AES-GCM 流式 `createCipheriv` / `createDecipheriv`（含 `setAAD` / `getAuthTag` / `setAuthTag`）、`sign` / `verify` |
+| Bun 兼容层 | 新增 `CryptoHasher`、`Glob`、`Cookie` / `CookieMap`、`fileURLToPath` / `pathToFileURL`、gzip/deflate 同步族、`nanoseconds`、`deepEquals` / `deepMatch`、`escapeHTML` / `stringWidth`、`concatArrayBuffers` / `allocUnsafe`；`Bun.which` 改为真实 PATH 搜索；`koss:buffer` 新增 Buffer BigInt 读写 |
+| Deno 兼容层 | `Deno.serve` 接线到完整 `koss:http` 服务端（handler 生效）；新增 `Deno.Env`、`Deno.kill`、同步文件 API 族（`readTextFileSync` 等）、`Deno.open` / `FsFile`、`Deno.readAll` / `writeAll`；`Deno.realPath` 改为真实解析 |
+
+**修复：**
+
+- `node:tls` / `node:https` 由"静默 stub"改为**显式抛 `_unsupported` 错误**，避免调用方误以为流量已加密
+- `node:dgram` 由"TCP 桥接模拟"升级为真实 UDP
+
+**测试：**
+
+- 新增 `test_compat_layer.py`、`test_web_api.py`
+- 更新 crypto（ed25519KeyPair / AES-GCM）、Deno.serve（可创建服务器）、Bun.which（行为放宽）断言
+
 ---
 
 ### 修复（Fixed）
@@ -223,7 +255,7 @@ Cargo.toml 依赖升级与新增：
 
 ### 许可证更新
 
-- `LICENSE.md` 大幅修订（+187 行），`README.md` 同步更新（提交 12ae743、375ceb9、02201c5）
+- 附加权限拆分至独立文件 `ADDITIONAL_PERMISSIONS.md`（提交 b69ec1c），`LICENSE.md` 精简，全库源代码文件头与 license 输出（`src/license_output.rs`）同步更新
 - 所有源代码文件添加头部版权标识（TT23XR Studio / AGPL-3.0）
 
 ---
@@ -233,15 +265,17 @@ Cargo.toml 依赖升级与新增：
 | 版本 | Python 测试 | Rust 测试 |
 |------|-------------|-----------|
 | dev.9 | 438 | 110 |
-| dev.10 | 498 | 156 |
-| **增量** | **+60** | **+46** |
+| dev.10 | 585 | 156 |
+| **增量** | **+147** | **+46** |
 
 > 统计口径：Python 按 `def test_` 函数数、Rust 按 `#[test]` 属性数统计（静态函数计数）。
 
-新增 Python 测试文件（3 个）：
+新增 Python 测试文件（5 个）：
 - `test_esm_import.py`（39 个）：ESM import `koss:/*` 协议模块
 - `test_sandbox_fs.py`（6 个）：FS 能力位门控、无损二进制写入（C1/H6）
 - `test_sandbox_js_audit.py`（11 个）：JS 层审核回调（放行/拒绝/异常/重入、宿主与 JS 关系、pwd、清除）
+- `test_compat_layer.py`（21 个）：fd 级文件系统、UDP/DNS/性能原生层、内置模块 shim
+- `test_web_api.py`（66 个）：Web API 全局引导（queueMicrotask/structuredClone/URL/AbortController/Event/FormData/File/Request 等）
 
 新增 Rust 测试（按文件）：
 - `builtins.rs` +27：Builtin 模块系统（标志位、koss: 协议解析、错误消息）

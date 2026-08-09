@@ -22,7 +22,7 @@
 | koss:http | `require('koss:http')` | HTTP 服务器与客户端 |
 | koss:io | `require('koss:io')` | 统一 I/O（文件+网络+流） |
 | koss:net | `require('koss:net')` | TCP 网络 |
-| koss:os → koss:system | `require('koss:os')` | 系统信息（别名） |
+| koss:os | `require('koss:os')` | 操作系统信息（独立模块，内部委派 `koss:system`，另含 version/machine/availableParallelism/devNull 等） |
 | koss:path | `require('koss:path')` | 路径处理 |
 | koss:process | `require('koss:process')` | 进程信息与环境 |
 | koss:querystring | `require('koss:querystring')` | 查询字符串 |
@@ -53,6 +53,13 @@
 | `writeText(path, text)` | `string, string` | `void` | 写入文本文件 |
 | `stat(path)` | `string` | `StatObject` | 获取文件元数据 |
 | `lstat(path)` | `string` | `StatObject` | 获取符号链接状态 |
+| `realpath(path)` | `string` | `string` | 解析真实路径 |
+| `symlink(target, path, type?)` | `string, string, string?` | `void` | 创建符号链接 |
+| `readlink(path)` | `string` | `string` | 读取符号链接目标 |
+| `append(path, data, isBase64?)` | `string, string, boolean?` | `void` | 追加写入（v0.1.0-dev.10 底层 `__koss_fs_append`） |
+| `chmod(path, mode)` | `string, number` | `void` | 修改文件权限 |
+| `truncate(path, len?)` | `string, number?` | `void` | 截断文件 |
+| `mkdtemp(prefix)` | `string` | `string` | 创建临时目录 |
 | `list(path)` | `string` | `string[]` | 列出目录内容 |
 | `mkdir(path, options?)` | `string, object?` | `void` | 创建目录 |
 | `rm(path, options?)` | `string, object?` | `void` | 删除文件/目录 |
@@ -79,7 +86,7 @@
 | 函数 | 参数 | 返回值 | 说明 |
 |------|------|--------|------|
 | `connect(host, port)` | `string, number` | `Socket` | 建立 TCP 连接 |
-| `serve(options, handler?)` | `object, function?` | `Server` | 启动 TCP 服务器 |
+| `serve(options, handler?)` | `object, function?` | `Server` | 启动服务器：无 handler 时创建 TCP 监听器；传入 handler 时接线完整 HTTP 服务器（`Deno.serve` 使用此模式） |
 | `fetch(url, options?)` | `string, object?` | `Response` | HTTP 请求 |
 | `dns(hostname)` | `string` | `string` | DNS 解析 |
 
@@ -141,15 +148,22 @@ const entries = io.list('/tmp');
 |------|------|--------|------|
 | `hash(algorithm, data)` | `string, string` | `string` | 计算哈希 |
 | `hashHex(algorithm, data)` | `string, string` | `string` | 计算哈希返回 hex 字符串 |
+| `hashBytes(algorithm, data)` | `string, Uint8Array` | `Uint8Array` | 计算哈希返回字节数组 |
 | `hmac(algorithm, key, data)` | `string, string, string` | `string` | HMAC 计算 |
+| `hmacHex(algorithm, key, data)` | `string, string, string` | `string` | HMAC 计算返回 hex |
+| `hmacBytes(algorithm, key, data)` | `string, string, Uint8Array` | `Uint8Array` | HMAC 计算返回字节数组 |
 | `randomBytes(n)` | `number` | `Uint8Array` | 生成 n 字节随机数 |
 | `uuid()` | — | `string` | 生成 UUID v4 |
 | `pbkdf2(password, salt, iterations, keylen)` | `string, string, number, number` | `Uint8Array` | PBKDF2 密钥派生 |
 | `sign(privateKey, data)` | `string, string` | `Uint8Array` | Ed25519 签名 |
 | `verify(publicKey, data, signature)` | `string, string, Uint8Array` | `boolean` | Ed25519 验证 |
-| `encrypt(key, plaintext)` | `Uint8Array, Uint8Array` | `object` | AES-GCM 加密 |
-| `decrypt(key, data)` | `Uint8Array, Uint8Array` | `Uint8Array` | 解密 |
-| `algorithms` | — | `string[]` | 支持的算法列表 |
+| `ed25519KeyPair()` | — | `{ publicKey, privateKey }` | 生成 Ed25519 密钥对（v0.1.0-dev.10 新增） |
+| `encrypt(key, plaintext, options?)` | `Uint8Array, Uint8Array, object?` | `Uint8Array` | AES-GCM 加密（`options.nonce`/`options.aad`） |
+| `decrypt(key, data, options?)` | `Uint8Array, Uint8Array, object?` | `Uint8Array` | AES-GCM 解密 |
+| `createCipher(algorithm, key, iv)` | `string, Uint8Array, Uint8Array` | `object` | 流式加密对象（update/final/getAuthTag） |
+| `createDecipher(algorithm, key, iv)` | `string, Uint8Array, Uint8Array` | `object` | 流式解密对象（update/final/setAuthTag） |
+| `timingSafeEqual(a, b)` | `Uint8Array, Uint8Array` | `boolean` | 恒定时间比较 |
+| `algorithms` | — | `string[]` | 支持的哈希算法列表 |
 
 ---
 
@@ -437,6 +451,67 @@ const entries = io.list('/tmp');
 | API | 类型 | 说明 |
 |-----|------|------|
 | `StringDecoder` | `class` | 字符串解码器 |
+
+---
+
+## 内部原生层（`__koss_*` 全局函数）
+
+> **说明：** 以下函数由 Rust 运行时注入到每个实例的 `globalThis`，是 `koss:*` 标准库与兼容层 shim 的底层实现。**面向用户的代码无需直接调用**；本表仅供阅读源码、调试与安全审计参考（v0.1.0-dev.10 新增 fd/UDP/DNS/性能族）。
+
+### fd 级文件系统（`__koss_fd_*`，per-instance fd 表）
+
+| 函数 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `__koss_fd_open(path, flags)` | `string, number` | `fd` | 打开文件返回文件描述符（flags 为 O_* 位掩码） |
+| `__koss_fd_read(fd, length)` | `number, number` | `{ code, value }` | 从 fd 读取（value 为 base64；EOF 时 code=2） |
+| `__koss_fd_write(fd, data, is_base64)` | `number, string, boolean` | `{ code, value }` | 写入 fd，value 为写入字节数 |
+| `__koss_fd_close(fd)` | `number` | `{ code }` | 关闭 fd |
+| `__koss_fd_sync(fd)` | `number` | `{ code }` | fsync 同步到磁盘 |
+| `__koss_fd_truncate(fd, len)` | `number, number` | `{ code }` | 按长度截断 |
+| `__koss_fd_fstat(fd)` | `number` | `{ code, value }` | 通过 fd 获取 stat（value 为 JSON 字符串） |
+
+### 路径级文件系统（`__koss_fs_*`）
+
+| 函数 | 说明 |
+|------|------|
+| `__koss_fs_exists(path)` | 检查存在（需 FS_READ） |
+| `__koss_fs_read(path)` | 读取文件（base64） |
+| `__koss_fs_write(path, data, is_base64)` | 写入文件 |
+| `__koss_fs_append(path, data, is_base64)` | 追加写入（v0.1.0-dev.10 新增） |
+| `__koss_fs_stat(path)` / `__koss_fs_mkdir(path, opts)` / `__koss_fs_readdir(path)` / `__koss_fs_unlink(path)` / `__koss_fs_rename(a, b)` / `__koss_fs_copy(a, b)` / `__koss_fs_realpath(path)` | 对应文件操作 |
+
+### UDP（`__koss_udp_*`，v0.1.0-dev.10 新增）
+
+真实 UDP 收发，Windows 下基于 WinSock2。供 `koss:node/dgram` 使用。
+
+| 函数 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `__koss_udp_create(type)` | `string` | `fd` | 创建 UDP socket（`udp4`/`udp6`） |
+| `__koss_udp_bind(fd, address, port)` | `number, string, number` | `{ code }` | 绑定地址端口 |
+| `__koss_udp_send(fd, data, is_base64, address, port)` | `number, string, boolean, string, number` | `{ code, value }` | 发送数据报 |
+| `__koss_udp_recv(fd, max_len)` | `number, number` | `{ code, value, from }` | 接收数据报（from 为 `addr:port`；无数据 code=2） |
+| `__koss_udp_close(fd)` | `number` | — | 关闭 socket |
+| `__koss_udp_address(fd)` | `number` | `string \| undefined` | 获取本地 `addr:port` |
+
+### DNS（`__koss_dns_*`，v0.1.0-dev.10 新增）
+
+| 函数 | 参数 | 返回值 | 说明 |
+|------|------|--------|------|
+| `__koss_dns_lookup(hostname)` | `string` | `string` | 域名解析，返回 IP 地址 JSON 数组字符串 |
+| `__koss_dns_lookup_service(addr)` | `string` | `string \| undefined` | 反向解析（getnameinfo），返回主机名 |
+
+### 性能时钟（`__koss_performance_*`，v0.1.0-dev.10 新增）
+
+| 函数 | 说明 |
+|------|------|
+| `__koss_performance_now()` | 单调递增高精度时钟（毫秒），不受系统时间调整影响 |
+| `__koss_performance_timeorigin()` | 性能时间原点（毫秒） |
+
+> 供 `koss:node/perf_hooks` 的 `performance.now()`、`Histogram`、`monitorEventLoopDelay` 与 `Bun.nanoseconds()` 使用。
+
+### C ABI 导出：`koss_register_fetch`
+
+除上述 `__koss_*` 全局函数外，v0.1.0-dev.10 还在 C ABI 层新增 `koss_register_fetch`（`src/runtime.rs`），用于注册自定义 fetch 实现。当前未在 `include/kossjs.h` 声明，也未包装进 Python/TypeScript 接口。
 
 ---
 
